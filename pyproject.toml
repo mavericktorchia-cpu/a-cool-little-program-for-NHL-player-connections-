@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nhl-connections"
+version = "1.0.0"
+description = "Find how any two NHL players are connected through their teammates."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+nhl-connections = "nhl_connections.cli:main"
+
+[tool.setuptools]
+packages = ["nhl_connections"]
