@@ -1,0 +1,69 @@
+# Publishes docs/ to GitHub Pages.
+# - On every push to main: run the tests, rebuild the page, deploy.
+# - Every Monday (and on demand from the Actions tab): also re-download all
+#   NHL rosters first, commit the new data if anything changed, then deploy.
+name: Update data and deploy site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 9 * * 1" # Mondays 09:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit refreshed roster data
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run tests
+        run: python -m unittest -v
+
+      - name: Re-download rosters
+        if: github.event_name != 'push'
+        run: python -m nhl_connections update
+
+      - name: Build web page
+        run: python web/build.py
+
+      - name: Commit refreshed data
+        if: github.event_name != 'push'
+        run: |
+          if git diff --quiet -- data docs; then
+            echo "Rosters unchanged."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data docs
+            git commit -m "Update NHL roster data"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

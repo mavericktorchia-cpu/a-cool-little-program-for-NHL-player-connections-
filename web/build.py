@@ -19,6 +19,33 @@ from nhl_connections.data import DEFAULT_DATA_FILE, load  # noqa: E402
 
 TEMPLATE = ROOT / "web" / "template.html"
 OUTPUT = ROOT / "docs" / "index.html"
+SITE_URL = "https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/"
+DESCRIPTION = (
+    "Pick any two NHL players from any era and see the shortest chain of teammates "
+    "between them, with the team and season behind every link."
+)
+# A red puck with a white center line, as an inline SVG so the page stays one file.
+FAVICON = (
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E"
+    "%3Ccircle cx='32' cy='32' r='30' fill='%23c8102e'/%3E"
+    "%3Crect x='29' y='4' width='6' height='56' fill='%23fff'/%3E"
+    "%3Ccircle cx='32' cy='32' r='10' fill='none' stroke='%23fff' stroke-width='5'/%3E%3C/svg%3E"
+)
+HEAD_EXTRA = f"""<meta name="description" content="{DESCRIPTION}">
+<link rel="icon" href="{FAVICON}">
+<link rel="canonical" href="{SITE_URL}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="NHL Player Connections">
+<meta property="og:description" content="{DESCRIPTION}">
+<meta property="og:url" content="{SITE_URL}">
+<meta property="og:image" content="{SITE_URL}og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="NHL Player Connections">
+<meta name="twitter:description" content="{DESCRIPTION}">
+<meta name="twitter:image" content="{SITE_URL}og.png">
+"""
 
 
 def team_names() -> dict[str, str]:
@@ -57,10 +84,13 @@ def main() -> None:
     payload = payload.replace("</", "<\\/")  # never close the <script> tag early
     body = TEMPLATE.read_text(encoding="utf-8").replace("/*__DATA__*/null", payload, 1)
 
+    # Title, fonts and styles belong in <head>; the rest of the template is the body.
+    split = body.index('<div class="wrap">')
+    head, content = body[:split], body[split:]
     page = (
         '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-        "</head>\n<body>\n" + body + "\n</body>\n</html>\n"
+        + HEAD_EXTRA + head + "</head>\n<body>\n" + content + "\n</body>\n</html>\n"
     )
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(page, encoding="utf-8")

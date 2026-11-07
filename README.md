@@ -36,12 +36,19 @@ the middle to find a different chain that skips them, or hit **Random pair**.
 It's one self-contained file (all the data is inside), so you can just open it
 in a browser.
 
-**Put it online for free with GitHub Pages:** in the repo go to *Settings →
-Pages*, choose *Deploy from a branch*, pick this branch and the `/docs`
-folder, and save. After a minute it's live at
-`https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/`.
+**Live site:** https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/
 
-After running `update`, rebuild the page with `python web/build.py`.
+The GitHub Action in `.github/workflows/pages.yml` publishes the site:
+
+* every push to `main` runs the tests, rebuilds the page and deploys it;
+* every Monday it also re-downloads all NHL rosters, commits the new data if
+  anything changed, and redeploys. You can trigger this from the *Actions* tab
+  too (*Update data and deploy site* → *Run workflow*).
+
+One-time setup: in *Settings → Pages*, set *Source* to **GitHub Actions**.
+
+To rebuild by hand after `update`: `python web/build.py`. The link-preview
+image `docs/og.png` comes from `web/og-card.html` (`node web/make-og.js`).
 
 ## Quick start (command line)
 
@@ -123,4 +130,5 @@ tests/       # offline unit tests:  python -m unittest
 
 ## License
 
-MIT
+MIT. Fan project, not affiliated with or endorsed by the National Hockey League.
+Player and roster data come from the NHL's public web API.

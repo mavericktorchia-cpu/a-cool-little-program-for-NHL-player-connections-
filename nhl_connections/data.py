@@ -47,31 +47,43 @@ def download(
                     jobs.append((team, season))
     log(f"Downloading {len(jobs)} team-season rosters with {workers} threads...")
 
-    players: dict[str, dict] = {}
-    rosters: dict[str, list[int]] = {}
+    results: dict[tuple[str, int], list[dict]] = {}
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(api.roster, team, season): (team, season) for team, season in jobs}
         for done, future in enumerate(as_completed(futures), 1):
-            team, season = futures[future]
-            members = future.result()
-            if members:
-                rosters[f"{team}-{season}"] = sorted({p["id"] for p in members})
-                for p in members:
-                    players.setdefault(
-                        str(p["id"]),
-                        {"name": _name(p), "pos": p.get("positionCode", ""), "born": p.get("birthDate", "")},
-                    )
+            results[futures[future]] = future.result()
             if done % 100 == 0 or done == len(jobs):
-                log(f"  {done}/{len(jobs)} rosters ({len(players)} players so far)")
+                log(f"  {done}/{len(jobs)} rosters")
+
+    # Newest seasons first, so each player's name and position come from their
+    # latest season no matter which download happened to finish first.
+    players: dict[str, dict] = {}
+    rosters: dict[str, list[int]] = {}
+    for (team, season), members in sorted(results.items(), key=lambda kv: (-kv[0][1], kv[0][0])):
+        if not members:
+            continue
+        rosters[f"{team}-{season}"] = sorted({p["id"] for p in members})
+        for p in members:
+            players.setdefault(
+                str(p["id"]),
+                {"name": _name(p), "pos": p.get("positionCode", ""), "born": p.get("birthDate", "")},
+            )
 
     payload = {
         "built": _dt.date.today().isoformat(),
-        "players": players,
+        "players": dict(sorted(players.items(), key=lambda kv: int(kv[0]))),
         "rosters": dict(sorted(rosters.items())),
     }
+    if path.exists():
+        old = load(path)
+        if old.get("players") == payload["players"] and old.get("rosters") == payload["rosters"]:
+            log(f"No roster changes since {old.get('built')}; left {path} as it was.")
+            return path
     path.parent.mkdir(parents=True, exist_ok=True)
-    with gzip.open(path, "wt", encoding="utf-8") as fh:
-        json.dump(payload, fh, separators=(",", ":"), ensure_ascii=False)
+    text = json.dumps(payload, separators=(",", ":"), ensure_ascii=False)
+    # mtime=0 keeps the file byte-for-byte identical for identical data.
+    with open(path, "wb") as raw, gzip.GzipFile(fileobj=raw, mode="wb", mtime=0) as fh:
+        fh.write(text.encode("utf-8"))
     log(f"Saved {len(rosters)} rosters and {len(players)} players to {path}")
     return path
 
