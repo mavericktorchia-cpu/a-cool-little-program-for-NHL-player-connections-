@@ -67,6 +67,21 @@ possible chain.
 Play it at
 https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/chain.html
 
+## Game: Mystery Player
+
+`docs/mystery.html` asks you to name a player from a scouting report of seven
+clues: position and era, career length, birth year, a famous teammate, first
+and last team, every team in order, then initials. You start with one clue.
+Each wrong guess unlocks the next one and shows what your guess has in common
+with the mystery player (position, debut decade, teams, career length, and
+whether they were teammates). Solve it with as few clues as you can.
+
+There's a daily player (the same for everyone, with a streak and shareable
+result) and a practice mode with **Stars** or **Deep cuts**.
+
+Play it at
+https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/mystery.html
+
 ## Quick start (command line)
 
 You only need Python 3.9 or newer. There's nothing to install.
@@ -139,7 +154,7 @@ nhl_connections/
   data.py    # downloads and saves / loads the roster file
   graph.py   # teammate graph, name lookup, shortest path search
   cli.py     # command-line interface
-web/       # page templates (template.html, chain.html) + build script
+web/       # page templates (template.html, chain.html, mystery.html) + build script
 docs/      # built pages (GitHub Pages)
 data/nhl_rosters.json.gz
 tests/       # offline unit tests:  python -m unittest

@@ -39,6 +39,12 @@ PAGES = [
         "Build the Chain",
         "A daily NHL puzzle: link two players one teammate at a time, in as few links as you can.",
     ),
+    (
+        "mystery.html",
+        "mystery.html",
+        "Mystery Player",
+        "A daily NHL guessing game: name the mystery player from as few clues as you can.",
+    ),
 ]
 
 
@@ -80,7 +86,16 @@ def compact(data: dict) -> dict:
     index = {int(pid): n for n, pid in enumerate(ids)}
     return {
         "built": data.get("built", ""),
-        "p": [[int(pid), data["players"][pid]["name"], data["players"][pid].get("pos", "")] for pid in ids],
+        # [id, name, position, birth year or 0]
+        "p": [
+            [
+                int(pid),
+                data["players"][pid]["name"],
+                data["players"][pid].get("pos", ""),
+                int((data["players"][pid].get("born") or "0")[:4] or 0),
+            ]
+            for pid in ids
+        ],
         "r": {key: [index[pid] for pid in members] for key, members in data["rosters"].items()},
         "t": team_names(),
     }
