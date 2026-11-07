@@ -1,7 +1,7 @@
-"""Build the web version: one self-contained HTML page with the roster data inside.
+"""Build the web pages: self-contained HTML files with the roster data inside.
 
-    python web/build.py                 # writes docs/index.html (ready for GitHub Pages)
-    python web/build.py --fragment X    # also writes a body-only copy to X
+    python web/build.py                  # writes docs/index.html and docs/chain.html (GitHub Pages)
+    python web/build.py --fragments DIR  # also writes body-only copies into DIR
 """
 
 from __future__ import annotations
@@ -17,8 +17,7 @@ sys.path.insert(0, str(ROOT))
 from nhl_connections import api  # noqa: E402
 from nhl_connections.data import DEFAULT_DATA_FILE, load  # noqa: E402
 
-TEMPLATE = ROOT / "web" / "template.html"
-OUTPUT = ROOT / "docs" / "index.html"
+DOCS = ROOT / "docs"
 SITE_URL = "https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/"
 DESCRIPTION = (
     "Pick any two NHL players from any era and see the shortest chain of teammates "
@@ -31,19 +30,32 @@ FAVICON = (
     "%3Crect x='29' y='4' width='6' height='56' fill='%23fff'/%3E"
     "%3Ccircle cx='32' cy='32' r='10' fill='none' stroke='%23fff' stroke-width='5'/%3E%3C/svg%3E"
 )
-HEAD_EXTRA = f"""<meta name="description" content="{DESCRIPTION}">
+# (template, output, title, description) for each page
+PAGES = [
+    ("template.html", "index.html", "NHL Player Connections", DESCRIPTION),
+    (
+        "chain.html",
+        "chain.html",
+        "Build the Chain",
+        "A daily NHL puzzle: link two players one teammate at a time, in as few links as you can.",
+    ),
+]
+
+
+def head_extra(title: str, description: str, url: str) -> str:
+    return f"""<meta name="description" content="{description}">
 <link rel="icon" href="{FAVICON}">
-<link rel="canonical" href="{SITE_URL}">
+<link rel="canonical" href="{url}">
 <meta property="og:type" content="website">
-<meta property="og:title" content="NHL Player Connections">
-<meta property="og:description" content="{DESCRIPTION}">
-<meta property="og:url" content="{SITE_URL}">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{description}">
+<meta property="og:url" content="{url}">
 <meta property="og:image" content="{SITE_URL}og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="NHL Player Connections">
-<meta name="twitter:description" content="{DESCRIPTION}">
+<meta name="twitter:title" content="{title}">
+<meta name="twitter:description" content="{description}">
 <meta name="twitter:image" content="{SITE_URL}og.png">
 """
 
@@ -77,28 +89,29 @@ def compact(data: dict) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA_FILE)
-    parser.add_argument("--fragment", type=Path, help="also write the page without the <html> wrapper here")
+    parser.add_argument("--fragments", type=Path, help="also write each page without the <html> wrapper here")
     args = parser.parse_args()
 
     payload = json.dumps(compact(load(args.data)), separators=(",", ":"), ensure_ascii=False)
     payload = payload.replace("</", "<\\/")  # never close the <script> tag early
-    body = TEMPLATE.read_text(encoding="utf-8").replace("/*__DATA__*/null", payload, 1)
 
-    # Title, fonts and styles belong in <head>; the rest of the template is the body.
-    split = body.index('<div class="wrap">')
-    head, content = body[:split], body[split:]
-    page = (
-        '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-        + HEAD_EXTRA + head + "</head>\n<body>\n" + content + "\n</body>\n</html>\n"
-    )
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(page, encoding="utf-8")
-    print(f"Wrote {OUTPUT} ({len(page) / 1024:.0f} KB)")
-    if args.fragment:
-        args.fragment.parent.mkdir(parents=True, exist_ok=True)
-        args.fragment.write_text(body, encoding="utf-8")
-        print(f"Wrote {args.fragment}")
+    for template, output, title, description in PAGES:
+        body = (ROOT / "web" / template).read_text(encoding="utf-8").replace("/*__DATA__*/null", payload, 1)
+        url = SITE_URL if output == "index.html" else SITE_URL + output
+        # Title, fonts and styles belong in <head>; the rest of the template is the body.
+        split = body.index('<div class="wrap">')
+        head, content = body[:split], body[split:]
+        page = (
+            '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+            + head_extra(title, description, url) + head + "</head>\n<body>\n" + content + "\n</body>\n</html>\n"
+        )
+        DOCS.mkdir(parents=True, exist_ok=True)
+        (DOCS / output).write_text(page, encoding="utf-8")
+        print(f"Wrote {DOCS / output} ({len(page) / 1024:.0f} KB)")
+        if args.fragments:
+            args.fragments.mkdir(parents=True, exist_ok=True)
+            (args.fragments / output).write_text(body, encoding="utf-8")
 
 
 if __name__ == "__main__":

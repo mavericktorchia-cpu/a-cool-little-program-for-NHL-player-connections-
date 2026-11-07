@@ -49,6 +49,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { background: var(--ice); }
 body {
   color: var(--ink);
@@ -59,6 +60,13 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .wrap { max-width: 760px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 28px; }
+
+nav.site { display: flex; gap: 6px; flex-wrap: wrap; font-size: 14px; }
+nav.site a {
+  color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule); font-weight: 500;
+}
+nav.site a[aria-current="page"] { background: var(--ink); color: var(--ice); border-color: var(--ink); }
+nav.site a:hover { border-color: var(--blue); }
 
 header { display: grid; gap: 6px; }
 .eyebrow {
@@ -166,6 +174,11 @@ footer a { color: var(--blue); }
 </head>
 <body>
 <div class="wrap">
+  <nav class="site" aria-label="Pages">
+    <a href="index.html" aria-current="page">Find a connection</a>
+    <a href="chain.html">Build the Chain</a>
+  </nav>
+
   <header>
     <div class="eyebrow">Every NHL roster, 1917–18 to today</div>
     <h1>NHL Player <span>Connections</span></h1>

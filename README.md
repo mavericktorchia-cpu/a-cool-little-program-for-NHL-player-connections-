@@ -50,6 +50,23 @@ One-time setup: in *Settings → Pages*, set *Source* to **GitHub Actions**.
 To rebuild by hand after `update`: `python web/build.py`. The link-preview
 image `docs/og.png` comes from `web/og-card.html` (`node web/make-og.js`).
 
+## Game: Build the Chain
+
+`docs/chain.html` is a puzzle built on the same data. You get two players and
+link them yourself, one teammate at a time. Each player you add must have
+shared a roster with the one before. Try to match **par**, the shortest
+possible chain.
+
+* **Daily puzzle:** everyone gets the same pair each day, with a puzzle number,
+  a saved streak, and a result you can copy and share.
+* **Practice:** endless random chains at Easy (par 2), Medium (par 3) or Hard
+  (par 4–6).
+* Wrong names count as misses, **Undo** is free, and **Hint** first names a
+  team and season to look at, then the next player's initials.
+
+Play it at
+https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/chain.html
+
 ## Quick start (command line)
 
 You only need Python 3.9 or newer. There's nothing to install.
@@ -122,8 +139,8 @@ nhl_connections/
   data.py    # downloads and saves / loads the roster file
   graph.py   # teammate graph, name lookup, shortest path search
   cli.py     # command-line interface
-web/       # web page template + build script
-docs/      # built web page (GitHub Pages)
+web/       # page templates (template.html, chain.html) + build script
+docs/      # built pages (GitHub Pages)
 data/nhl_rosters.json.gz
 tests/       # offline unit tests:  python -m unittest
 ```
