@@ -28,7 +28,22 @@ Connor Bedard -> Maurice Richard: 6 degrees of separation
 It comes with every NHL roster from 1917-18 to today (about 1,800 team-seasons
 and 8,700+ players) in a 250 KB file, so it runs offline and answers instantly.
 
-## Quick start
+## Web version
+
+`docs/index.html` is the same thing as a web page: type two names, pick from
+the suggestions, and see the chain. Click **Route around** on any player in
+the middle to find a different chain that skips them, or hit **Random pair**.
+It's one self-contained file (all the data is inside), so you can just open it
+in a browser.
+
+**Put it online for free with GitHub Pages:** in the repo go to *Settings →
+Pages*, choose *Deploy from a branch*, pick this branch and the `/docs`
+folder, and save. After a minute it's live at
+`https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/`.
+
+After running `update`, rebuild the page with `python web/build.py`.
+
+## Quick start (command line)
 
 You only need Python 3.9 or newer. There's nothing to install.
 
@@ -100,6 +115,8 @@ nhl_connections/
   data.py    # downloads and saves / loads the roster file
   graph.py   # teammate graph, name lookup, shortest path search
   cli.py     # command-line interface
+web/       # web page template + build script
+docs/      # built web page (GitHub Pages)
 data/nhl_rosters.json.gz
 tests/       # offline unit tests:  python -m unittest
 ```
