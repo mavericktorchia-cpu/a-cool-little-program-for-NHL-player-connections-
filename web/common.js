@@ -128,6 +128,81 @@ const DAILY_DONE = {
   longer: () => ((store.get("longer-daily-" + dateKey) || {}).answers || []).length >= 10,
   roster: () => !!(store.get("roster-daily-" + dateKey) || {}).ended,
 };
+// One line about today's puzzle for each game, for the "Today's puzzles" cards.
+// state: "todo" | "playing" | "done"
+function dailySummary(game) {
+  const today_ = store.get(`${game}-daily-${dateKey}`);
+  if (game === "chain") {
+    const hist = store.get("chain-history") || {};
+    const streak = streakFrom(hist, h => h.links !== null);
+    if (!today_) return { state: "todo", text: "Not played yet", streak };
+    if (!today_.done) return { state: "playing", text: `In progress: ${plural(today_.chain.length - 1, "link", "links")} so far`, streak };
+    const h = hist[dateKey] || {};
+    return { state: "done", text: today_.gaveUp ? "Gave up" : `${plural(today_.chain.length - 1, "link", "links")} (par ${h.par ?? "?"})`, streak };
+  }
+  if (game === "mystery") {
+    const streak = streakFrom(store.get("mystery-history") || {}, h => h.clues !== null);
+    if (!today_) return { state: "todo", text: "Not played yet", streak };
+    if (!today_.done) return { state: "playing", text: `In progress: clue ${today_.shown} of 7`, streak };
+    return { state: "done", text: today_.won ? `Solved with ${today_.shown} of 7 clues` : "Stumped", streak };
+  }
+  if (game === "longer") {
+    const answers = (today_ || {}).answers || [];
+    const right = answers.filter(Boolean).length;
+    const streak = streakFrom(store.get("longer-history") || {}, () => true);
+    if (!answers.length) return { state: "todo", text: "Not played yet", streak };
+    if (answers.length < 10) return { state: "playing", text: `In progress: round ${answers.length + 1} of 10`, streak };
+    return { state: "done", text: `${right}/10 correct`, streak };
+  }
+  if (game === "roster") {
+    const streak = streakFrom(store.get("roster-history") || {}, () => true);
+    if (!today_ || !today_.startedAt) return { state: "todo", text: "Not played yet", streak };
+    if (!today_.ended) return { state: "playing", text: `In progress: ${plural((today_.found || []).length, "player", "players")} named`, streak };
+    const h = (store.get("roster-history") || {})[dateKey] || {};
+    return { state: "done", text: `${h.found ?? (today_.found || []).length}/${h.total ?? "?"} named`, streak };
+  }
+  return { state: "todo", text: "" };
+}
+
+// A bar chart of every daily result saved in this browser, with today's bar highlighted.
+function historyChart(game) {
+  const hist = store.get(game + "-history") || {};
+  const days = Object.keys(hist);
+  // Each game sorts a day's result into one of its buckets.
+  const BUCKETS = {
+    chain: [["Par", h => h.links === h.par], ["+1", h => h.links === h.par + 1], ["+2", h => h.links === h.par + 2],
+            ["+3 or more", h => h.links !== null && h.links >= h.par + 3], ["Gave up", h => h.links === null]],
+    mystery: [1, 2, 3, 4, 5, 6, 7].map(n => [`${n} ${n === 1 ? "clue" : "clues"}`, h => h.clues === n]).concat([["Stumped", h => h.clues === null]]),
+    longer: [["10/10", h => h.right === 10], ["8–9", h => h.right >= 8 && h.right < 10], ["6–7", h => h.right >= 6 && h.right < 8],
+             ["4–5", h => h.right >= 4 && h.right < 6], ["0–3", h => h.right < 4]],
+    roster: [["80%+", h => h.found / h.total >= .8], ["60–79%", h => h.found / h.total >= .6 && h.found / h.total < .8],
+             ["40–59%", h => h.found / h.total >= .4 && h.found / h.total < .6], ["20–39%", h => h.found / h.total >= .2 && h.found / h.total < .4],
+             ["Under 20%", h => h.found / h.total < .2]],
+  }[game];
+  const box = document.createElement("div");
+  box.className = "dist";
+  if (!BUCKETS || !days.length) return box;
+  const counts = BUCKETS.map(([, test]) => days.filter(d => test(hist[d])).length);
+  const max = Math.max(1, ...counts);
+  const todayIdx = hist[dateKey] ? BUCKETS.findIndex(([, test]) => test(hist[dateKey])) : -1;
+  const h = document.createElement("h3");
+  h.textContent = `Your results · ${plural(days.length, "day", "days")} played`;
+  box.appendChild(h);
+  BUCKETS.forEach(([label], k) => {
+    const row = document.createElement("div");
+    row.className = "dist-row" + (k === todayIdx ? " today" : "");
+    const l = document.createElement("span"); l.className = "dist-label"; l.textContent = label;
+    const track = document.createElement("span"); track.className = "dist-track";
+    const bar = document.createElement("span"); bar.className = "dist-bar";
+    bar.style.width = `${Math.max(counts[k] ? 8 : 0, (100 * counts[k]) / max)}%`;
+    const n = document.createElement("span"); n.className = "dist-n"; n.textContent = counts[k];
+    track.appendChild(bar);
+    row.append(l, track, n);
+    box.appendChild(row);
+  });
+  return box;
+}
+
 function firstVisit(game) { return !store.get("seen-" + game); }
 function markSeen(game) { store.set("seen-" + game, 1); }
 
@@ -147,8 +222,18 @@ function startCountdown(el) {
   el._timer = setInterval(() => { if (!el.isConnected) clearInterval(el._timer); else draw(); }, 30000);
 }
 
+// On phones, results go to the share sheet (Messages, WhatsApp...) instead of the clipboard.
+const canShare = !!navigator.share && window.matchMedia && matchMedia("(pointer: coarse)").matches;
+function prepareShare(button) {
+  if (canShare) button.textContent = button.dataset.label = "Share result";
+}
+
 // Copy text to the clipboard from a click; if the browser refuses, select it for the viewer.
 async function copyText(button, text, fallbackEl) {
+  if (canShare && button.dataset.label === "Share result") {
+    try { await navigator.share({ text }); return; }
+    catch (err) { if (err && err.name === "AbortError") return; }  // closing the sheet is fine
+  }
   try {
     await navigator.clipboard.writeText(text);
     button.textContent = "Copied";
@@ -160,6 +245,46 @@ async function copyText(button, text, fallbackEl) {
     button.textContent = "Selected. Press Ctrl+C to copy";
   }
   setTimeout(() => { if (button.isConnected) button.textContent = button.dataset.label || "Copy"; }, 2500);
+}
+
+/* ---------- player career ---------- */
+// Team runs in career order, e.g. [["QUE", "1990", "1995"], ["COL", "1995", "2009"]]
+function careerRuns(i) {
+  const out = [];
+  for (const s of P[i].stints) {
+    const t = team(s), y = season(s);
+    const run = out.find(r => r[0] === t && +r[2] === +y.slice(0, 4));
+    if (run) run[2] = y.slice(4);
+    else out.push([t, y.slice(0, 4), y.slice(4)]);
+  }
+  return out.sort((a, b) => a[1] - b[1]);
+}
+// Teammates with the most seasons together: [[playerIndex, seasons], ...]
+function topTeammates(i, n = 3) {
+  const counts = new Map();
+  for (const s of P[i].stints) for (const o of R[s]) if (o !== i) counts.set(o, (counts.get(o) || 0) + 1);
+  return [...counts].sort((a, b) => b[1] - a[1] || P[b[0]].stints.length - P[a[0]].stints.length).slice(0, n);
+}
+const teammateCount = i => { const s = new Set(); for (const st of P[i].stints) for (const o of R[st]) if (o !== i) s.add(o); return s.size; };
+
+// A small career card: summary line, every team in order, and most frequent teammates.
+function careerCard(i) {
+  const p = P[i];
+  const box = document.createElement("div");
+  box.className = "career";
+  const teams = new Set(p.stints.map(team)).size;
+  const facts = [plural(seasonsOf(i), "season", "seasons"), plural(teams, "team", "teams"), plural(teammateCount(i), "teammate", "teammates")];
+  if (p.born) facts.push(`born ${p.born}`);
+  const line = document.createElement("p"); line.className = "career-facts"; line.textContent = facts.join(" · ");
+  const runs = document.createElement("div"); runs.className = "career-teams";
+  careerRuns(i).forEach(([t, a, b]) => {
+    const c = document.createElement("span"); c.className = "chip"; c.title = teamName(t);
+    c.textContent = `${t} ${a}–${b.slice(2)}`; runs.appendChild(c);
+  });
+  const mates = document.createElement("p"); mates.className = "career-mates";
+  mates.textContent = "Most seasons with: " + topTeammates(i).map(([o, n]) => `${P[o].name} (${n})`).join(", ");
+  box.append(line, runs, mates);
+  return box;
 }
 
 /* ---------- player picker (accessible combobox) ---------- */

@@ -37,6 +37,32 @@ button:hover { border-color: var(--blue); }
 .avoiding { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); }
 .avoiding button { padding: 6px 10px; font-size: 13px; font-weight: 500; }
 
+/* ---------- today's puzzles ---------- */
+.today { display: grid; gap: 10px; }
+.today-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.today h2 { font-family: var(--display); font-weight: 800; font-size: 24px; text-transform: uppercase; margin: 0; }
+.today-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 720px) { .today-grid { grid-template-columns: repeat(2, 1fr); } }
+.game {
+  display: grid; gap: 4px; align-content: start; padding: 12px 14px; border-radius: 10px; min-width: 0;
+  background: var(--boards); border: 1px solid var(--rule); color: var(--ink); text-decoration: none;
+}
+.game:hover { border-color: var(--blue); }
+.game .gname { font-family: var(--display); font-weight: 800; font-size: 20px; line-height: 1; text-transform: uppercase; }
+.game .gstate { font-size: 13px; color: var(--muted); }
+.game .gstreak { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.game.done { border-color: var(--good); background: var(--good-wash); }
+.game.done .gstate { color: var(--good); font-weight: 600; }
+.game.playing .gstate { color: var(--blue); font-weight: 600; }
+.game .gcta { font-size: 13px; font-weight: 600; color: var(--red); }
+
+/* ---------- career details ---------- */
+.plate .career-toggle { padding: 6px 10px; font-size: 12.5px; font-weight: 500; }
+.plate .career { flex-basis: 100%; display: grid; gap: 6px; border-top: 1px dashed var(--rule); padding-top: 8px; }
+.career-facts, .career-mates { margin: 0; font-size: 13.5px; color: var(--muted); }
+.career-teams { display: flex; flex-wrap: wrap; gap: 5px; }
+.plate .actions-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
 /* ---------- result ---------- */
 #result { display: grid; gap: 22px; }
 .verdict { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
@@ -44,7 +70,7 @@ button:hover { border-color: var(--blue); }
   font-family: var(--display); font-weight: 900; font-size: 96px; line-height: .8; color: var(--red);
   font-variant-numeric: tabular-nums;
 }
-.verdict p { margin: 0; font-size: 18px; max-width: 46ch; }
+.verdict p { margin: 0; font-size: 18px; max-width: 46ch; color: var(--ink); }
 .verdict strong { font-weight: 600; }
 .copy-link { margin-left: auto; padding: 8px 12px; font-size: 13px; font-weight: 500; }
 .verdict .unit { font-family: var(--display); font-weight: 800; font-size: 26px; text-transform: uppercase; letter-spacing: .03em; display: block; line-height: 1; margin-bottom: 4px; }
@@ -92,6 +118,11 @@ ol.chain::before { /* the red center line */
     <p class="lede">Pick any two players from any era. This finds the shortest chain of teammates between them, and the team and season behind every link.</p>
   </header>
 
+  <section class="today" aria-labelledby="today-h">
+    <div class="today-head"><h2 id="today-h">Today's puzzles</h2><span class="countdown" id="today-countdown"></span></div>
+    <div class="today-grid" id="today-grid"></div>
+  </section>
+
   <form id="form" autocomplete="off">
     <div class="pickers">
       <div class="field">
@@ -125,6 +156,33 @@ ol.chain::before { /* the red center line */
 </div>
 
 <script>
+/* ---------- today's puzzles ---------- */
+const GAMES = [
+  ["chain", "chain.html", "Build the Chain"], ["mystery", "mystery.html", "Mystery Player"],
+  ["longer", "longer.html", "Who Played Longer?"], ["roster", "roster.html", "Name the Roster"],
+];
+function renderToday() {
+  const grid = $("today-grid");
+  grid.innerHTML = "";
+  let done = 0;
+  for (const [game, href, name] of GAMES) {
+    const sum = dailySummary(game);
+    if (sum.state === "done") done++;
+    const a = document.createElement("a");
+    a.href = href; a.className = "game " + sum.state;
+    const n = document.createElement("span"); n.className = "gname"; n.textContent = name;
+    const st = document.createElement("span"); st.className = "gstate"; st.textContent = (sum.state === "done" ? "✓ " : "") + sum.text;
+    a.append(n, st);
+    if (sum.streak) { const k = document.createElement("span"); k.className = "gstreak"; k.textContent = `Streak: ${plural(sum.streak, "day", "days")}`; a.appendChild(k); }
+    if (sum.state !== "done") { const c = document.createElement("span"); c.className = "gcta"; c.textContent = sum.state === "playing" ? "Keep going →" : "Play →"; a.appendChild(c); }
+    grid.appendChild(a);
+  }
+  const cd = $("today-countdown");
+  if (done === GAMES.length) { cd.hidden = false; startCountdown(cd); } else { cd.textContent = `${done} of ${GAMES.length} done`; }
+}
+renderToday();
+window.addEventListener("pageshow", renderToday);  // refresh when coming back from a game
+
 /* ---------- pickers ---------- */
 const state = { a: null, b: null, avoid: new Set() };
 function picker(which) {
@@ -224,13 +282,25 @@ function connect() {
     li.innerHTML = `<div class="puck" aria-hidden="true">${n}</div><div class="plate"><div class="who"><div class="name"></div><div class="meta"></div></div></div>`;
     li.querySelector(".name").textContent = p.name;
     li.querySelector(".meta").textContent = describe(p);
+    const plateEl = li.querySelector(".plate");
+    const row = document.createElement("div"); row.className = "actions-row";
+    const more = document.createElement("button");
+    more.type = "button"; more.className = "career-toggle"; more.textContent = "Career";
+    more.setAttribute("aria-expanded", "false");
+    more.addEventListener("click", () => {
+      const open = plateEl.querySelector(".career");
+      if (open) { open.remove(); more.setAttribute("aria-expanded", "false"); return; }
+      plateEl.appendChild(careerCard(pi)); more.setAttribute("aria-expanded", "true");
+    });
+    row.appendChild(more);
+    plateEl.appendChild(row);
     if (!end) {
       const btn = document.createElement("button");
       btn.type = "button"; btn.textContent = "Route around";
       btn.title = `Find a chain that doesn't go through ${p.name}`;
-      btn.setAttribute("aria-label", `Find a chain that doesn't go through ${p.name}`);
+      btn.setAttribute("aria-label", `Route around ${p.name}`);
       btn.addEventListener("click", () => { state.avoid.add(pi); connect(); });
-      li.querySelector(".plate").appendChild(btn);
+      row.appendChild(btn);
     }
     ol.appendChild(li);
   });

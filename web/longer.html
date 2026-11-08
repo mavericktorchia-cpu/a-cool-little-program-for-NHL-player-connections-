@@ -262,6 +262,11 @@ function choose(side) {
   if (mode === "daily") {
     D.answers.push(right);
     store.set("longer-daily-" + dateKey, { answers: D.answers });
+    if (D.answers.length === ROUNDS) {
+      const hist = store.get("longer-history") || {};
+      hist[dateKey] = { right: D.answers.filter(Boolean).length };
+      store.set("longer-history", hist);
+    }
   } else if (right) {
     E.streak++;
     const best = store.get("longer-best-" + endlessStat) || 0;
@@ -334,7 +339,7 @@ function render(slide) {
     } else {
       st.innerHTML = '<span class="tap">Tap to pick</span>';
     }
-    c.setAttribute("aria-label", reveal ? `${P[pi].name}: ${v[side]} ${S.unit(v[side])}` : `Pick ${P[pi].name}`);
+
   });
 
   const nb = $("next");
@@ -368,9 +373,10 @@ function renderResult() {
     box.querySelector("h2").textContent = title;
     box.querySelector("#share-text").textContent = shareText();
   const cd = box.querySelector(".countdown");
-  if (mode === "daily") startCountdown(cd); else cd.remove();
+  if (mode === "daily") { startCountdown(cd); cd.before(historyChart("longer")); } else cd.remove();
     const copyBtn = box.querySelector("#copy");
   copyBtn.dataset.label = "Copy result";
+  prepareShare(copyBtn);
   copyBtn.addEventListener("click", () => copyText(copyBtn, shareText(), box.querySelector("#share-text")));
     box.querySelector("#go-endless").addEventListener("click", () => { say(""); startEndless(); });
   } else {

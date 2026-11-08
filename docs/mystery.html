@@ -26,8 +26,169 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=4966a71f2a">
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Shared look for every page: rink colors, type, page links, buttons, results and footer.
+   Each page adds its own layout on top. */
+:root {
+  --ice: #eef3f7;
+  --boards: #ffffff;
+  --ink: #0d1b2a;
+  --muted: #566778;
+  --rule: #d3dde6;
+  --red: #c8102e;
+  --blue: #1d4f9e;
+  --blue-wash: #e3ecf8;
+  --good: #1d7a46;
+  --good-wash: #e2f3e8;
+  --bad-wash: #fbe5e8;
+  --display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
+    --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; --bad-wash: #3a1820;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
+  --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; --bad-wash: #3a1820;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--ice); }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 760px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 24px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- page links ---------- */
+nav.site { display: flex; gap: 6px; flex-wrap: wrap; font-size: 14px; }
+nav.site a {
+  color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule); font-weight: 500;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+nav.site a[aria-current="page"] { background: var(--ink); color: var(--ice); border-color: var(--ink); }
+nav.site a:hover { border-color: var(--blue); }
+nav.site a.done::after {
+  content: "✓"; display: inline-grid; place-items: center; width: 17px; height: 17px; border-radius: 50%;
+  background: var(--good); color: #fff; font-size: 11px; font-weight: 700;
+}
+
+/* ---------- headings ---------- */
+header { display: grid; gap: 6px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.eyebrow::before { content: ""; width: 28px; height: 3px; background: var(--blue); flex: none; }
+h1 {
+  font-family: var(--display); font-weight: 900; font-size: clamp(44px, 9vw, 76px);
+  line-height: .92; margin: 0; letter-spacing: .005em; text-transform: uppercase; text-wrap: balance;
+}
+h1 span { color: var(--red); }
+.lede { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+
+/* ---------- controls ---------- */
+button, select {
+  font: 600 15px/1 var(--body); border-radius: 8px; cursor: pointer; border: 1px solid var(--rule);
+  background: var(--boards); color: var(--ink); padding: 11px 15px;
+}
+button:hover:not(:disabled), select:hover { border-color: var(--blue); }
+button:focus-visible, a:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+button:disabled { opacity: .45; cursor: default; }
+.primary {
+  background: var(--red); border-color: var(--red); color: #fff; font-family: var(--display);
+  font-weight: 800; font-size: 19px; letter-spacing: .06em; text-transform: uppercase;
+}
+.primary:hover:not(:disabled) { filter: brightness(1.08); border-color: var(--red); }
+.modes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 9px; padding: 3px; background: var(--boards); gap: 3px; }
+.seg button { border: 0; padding: 8px 14px; border-radius: 6px; background: transparent; font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--ice); }
+.tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.tools button { padding: 9px 13px; font-size: 14px; font-weight: 500; }
+.tools .primary { font-size: 17px; }
+.record { font-family: var(--mono); font-size: 12.5px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+.record b { color: var(--ink); font-weight: 500; }
+
+input[type="text"] {
+  width: 100%; font: 600 18px/1.2 var(--body); color: var(--ink); background: var(--ice);
+  border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px;
+}
+input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; border-color: transparent; }
+
+/* ---------- player suggestions ---------- */
+.field { position: relative; min-width: 0; }
+.listbox {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 5; margin: 0; padding: 4px; list-style: none;
+  background: var(--boards); border: 1px solid var(--rule); border-radius: 8px; box-shadow: 0 12px 28px rgb(0 0 0 / .18);
+  max-height: 320px; overflow-y: auto;
+}
+.listbox li { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: grid; gap: 1px; }
+.listbox li[aria-selected="true"], .listbox li:hover { background: var(--blue-wash); }
+.listbox .n { font-weight: 600; }
+.listbox .m { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.listbox .empty { color: var(--muted); cursor: default; }
+
+.chip {
+  font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--blue); background: var(--blue-wash);
+  border-radius: 5px; padding: 3px 8px; white-space: nowrap;
+}
+.feedback { margin: 0; font-weight: 600; min-height: 1.5em; }
+.feedback.ok { color: var(--good); }
+.feedback.bad { color: var(--red); }
+.feedback.hint, .feedback.near { color: var(--blue); }
+
+/* ---------- results ---------- */
+.result { background: var(--boards); border: 2px solid var(--ink); border-radius: 12px; padding: 18px; display: grid; gap: 14px; }
+.verdict { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.big { font-family: var(--display); font-weight: 900; font-size: 84px; line-height: .8; color: var(--red); font-variant-numeric: tabular-nums; }
+.verdict h2 { font-family: var(--display); font-weight: 800; font-size: 30px; text-transform: uppercase; margin: 0; line-height: 1; }
+.verdict p { margin: 4px 0 0; color: var(--muted); }
+.result h3 { font-size: 14px; margin: 4px 0 0; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.share-box {
+  font-family: var(--mono); font-size: 13px; white-space: pre-wrap; background: var(--ice); border-radius: 8px; padding: 10px 12px; margin: 0;
+  user-select: all; overflow-wrap: anywhere;
+}
+.countdown { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+
+details.how { background: var(--boards); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; }
+details.how summary { cursor: pointer; font-weight: 600; }
+details.how ul { margin: 10px 0 2px; padding-left: 20px; display: grid; gap: 4px; }
+
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; display: grid; gap: 6px; }
+footer a { color: var(--blue); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+}
+
+/* ---------- results history ---------- */
+.dist { display: grid; gap: 5px; }
+.dist:empty { display: none; }
+.dist-row { display: grid; grid-template-columns: 92px 1fr 32px; gap: 8px; align-items: center; font-size: 13px; }
+.dist-label { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.dist-track { height: 16px; background: var(--ice); border-radius: 4px; overflow: hidden; }
+.dist-bar { display: block; height: 100%; background: var(--muted); border-radius: 4px; }
+.dist-row.today .dist-bar { background: var(--good); }
+.dist-row.today .dist-label { color: var(--ink); font-weight: 600; }
+.dist-n { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+</style>
 <style>
 /* Layout: one column. A scouting card of numbered clues fills in from the top; guesses stack below it with how close each one was. */
 .wrap { max-width: 760px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 24px; }
@@ -191,8 +352,8 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
   </footer>
 </div>
 
-<script src="data.js?v=4966a71f2a"></script>
-<script src="common.js?v=4966a71f2a"></script>
+<script src="data.js?v=3f92eeb0a9"></script>
+<script src="common.js?v=3f92eeb0a9"></script>
 <script>
 const SITE = SITE_ROOT + "mystery.html";
 const FIRST_DAY = Date.UTC(2026, 10, 7); // puzzle #1
@@ -433,9 +594,10 @@ function renderResult() {
   box.querySelector(".verdict p").textContent = sub;
   box.querySelector("#share-text").textContent = shareText();
   const cd = box.querySelector(".countdown");
-  if (mode === "daily") startCountdown(cd); else cd.remove();
+  if (mode === "daily") { startCountdown(cd); cd.before(historyChart("mystery")); } else cd.remove();
   const copyBtn = box.querySelector("#copy");
   copyBtn.dataset.label = "Copy result";
+  prepareShare(copyBtn);
   copyBtn.addEventListener("click", () => copyText(copyBtn, shareText(), box.querySelector("#share-text")));
   const next = box.querySelector("#next");
   next.textContent = mode === "daily" ? "Play a practice round" : "New player";

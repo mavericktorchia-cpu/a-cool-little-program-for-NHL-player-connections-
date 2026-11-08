@@ -427,9 +427,10 @@ function renderResult() {
   }
   box.querySelector("#share-text").textContent = shareText();
   const cd = box.querySelector(".countdown");
-  if (mode === "daily") startCountdown(cd); else cd.remove();
+  if (mode === "daily") { startCountdown(cd); cd.before(historyChart("chain")); } else cd.remove();
   const copyBtn = box.querySelector("#copy");
   copyBtn.dataset.label = "Copy result";
+  prepareShare(copyBtn);
   copyBtn.addEventListener("click", () => copyText(copyBtn, shareText(), box.querySelector("#share-text")));
   const next = box.querySelector("#next");
   next.textContent = mode === "daily" ? "Play a practice chain" : "New chain";

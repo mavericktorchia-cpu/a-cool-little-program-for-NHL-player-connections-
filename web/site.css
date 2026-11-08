@@ -147,3 +147,14 @@ footer a { color: var(--blue); }
   .shake { animation: shake .3s; }
   @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 }
+
+/* ---------- results history ---------- */
+.dist { display: grid; gap: 5px; }
+.dist:empty { display: none; }
+.dist-row { display: grid; grid-template-columns: 92px 1fr 32px; gap: 8px; align-items: center; font-size: 13px; }
+.dist-label { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.dist-track { height: 16px; background: var(--ice); border-radius: 4px; overflow: hidden; }
+.dist-bar { display: block; height: 100%; background: var(--muted); border-radius: 4px; }
+.dist-row.today .dist-bar { background: var(--good); }
+.dist-row.today .dist-label { color: var(--ink); font-weight: 600; }
+.dist-n { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }

@@ -4,7 +4,7 @@
 
 Writes the five pages, plus the files they share:
   data.js     every roster, as one compact script (downloaded once, then cached)
-  common.js   shared code;  site.css  shared styles
+  common.js   shared code  (web/site.css, the shared styles, is copied into each page)
   sw.js       offline support;  manifest.webmanifest + icons/  "add to home screen"
 Shared files are linked with ?v=<content hash>, so browsers fetch them again only when they change.
 """
@@ -160,7 +160,7 @@ def main() -> None:
     common_js = (web / "common.js").read_text(encoding="utf-8")
     site_css = (web / "site.css").read_text(encoding="utf-8")
     version = hashlib.sha256((data_js + common_js + site_css).encode("utf-8")).hexdigest()[:10]
-    for name, text in (("data.js", data_js), ("common.js", common_js), ("site.css", site_css)):
+    for name, text in (("data.js", data_js), ("common.js", common_js)):
         (DOCS / name).write_text(text, encoding="utf-8")
         print(f"Wrote {DOCS / name} ({len(text.encode('utf-8')) / 1024:.0f} KB)")
 
@@ -170,7 +170,8 @@ def main() -> None:
         shutil.copyfile(icon, icons / icon.name)
     (DOCS / "manifest.webmanifest").write_text(json.dumps(MANIFEST, indent=2) + "\n", encoding="utf-8")
 
-    shared_head = f'<link rel="stylesheet" href="site.css?v={version}">\n'
+    # Shared styles go straight into each page (saves a request before first paint).
+    shared_head = "<style>\n" + site_css + "</style>\n"
     shared_scripts = f'<script src="data.js?v={version}"></script>\n<script src="common.js?v={version}"></script>\n'
     for template, output, title, description in PAGES:
         body = (web / template).read_text(encoding="utf-8")
@@ -180,6 +181,11 @@ def main() -> None:
         head, content = body[:split], body[split:]
         style = head.index("<style>")
         head = head[:style] + shared_head + head[style:]  # page styles come after the shared ones
+        # Load Google Fonts without blocking the first paint; text shows in a fallback face until then.
+        head = head.replace(
+            '<link rel="stylesheet" href="https://fonts.googleapis.com/',
+            '<link rel="stylesheet" media="print" onload="this.media=\'all\'" href="https://fonts.googleapis.com/',
+        )
         script = content.index("<script>")
         content = content[:script] + shared_scripts + content[script:]
         page = (
@@ -190,9 +196,31 @@ def main() -> None:
         (DOCS / output).write_text(page, encoding="utf-8")
         print(f"Wrote {DOCS / output} ({len(page) / 1024:.0f} KB)")
 
+    # Search engines: a sitemap of the five pages, and robots.txt pointing at it.
+    urls = "".join(f"  <url><loc>{SITE_URL if out == 'index.html' else SITE_URL + out}</loc></url>\n" for _, out, _, _ in PAGES)
+    (DOCS / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n",
+        encoding="utf-8",
+    )
+    (DOCS / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}sitemap.xml\n", encoding="utf-8")
+
+    # A friendly "page not found". GitHub Pages serves it for any missing path, so links are absolute.
+    links = "".join(f'<li><a href="{SITE_URL if out == "index.html" else SITE_URL + out}">{title}</a></li>' for _, out, title, _ in PAGES)
+    (DOCS / "404.html").write_text(
+        '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+        f'<title>Offside: page not found</title>\n<link rel="icon" href="{FAVICON}">\n<meta name="robots" content="noindex">\n'
+        "<style>\n" + site_css + ".lost ul { padding-left: 20px; display: grid; gap: 6px; font-size: 18px; } .lost a { color: var(--blue); }</style>\n"
+        "</head>\n<body>\n<div class=\"wrap lost\">\n<header><div class=\"eyebrow\">Error 404</div>"
+        "<h1>Offside. <span>No page here.</span></h1>"
+        "<p class=\"lede\">That link doesn't go anywhere on this site. Try one of these instead:</p></header>\n"
+        f"<ul>{links}</ul>\n</div>\n</body>\n</html>\n",
+        encoding="utf-8",
+    )
+
     # Offline support: cache every page and shared file under this version.
     precache = ["./"] + [out for _, out, _, _ in PAGES] + [
-        f"site.css?v={version}", f"common.js?v={version}", f"data.js?v={version}",
+        f"common.js?v={version}", f"data.js?v={version}",
         "manifest.webmanifest", "icons/icon-192.png", "og.png",
     ]
     sw = (web / "sw.js").read_text(encoding="utf-8")

@@ -50,8 +50,11 @@ function serve() {
   await p.click("#go"); await p.waitForTimeout(100);
   check((await p.locator(".chain .player").count()) >= 2, "connects Gretzky and Crosby");
   check(await p.isVisible(".copy-link"), "copy link button");
-  await p.locator(".player:not(.end) button").first().click(); await p.waitForTimeout(100);
+  await p.locator(".player:not(.end) .career-toggle").first().click(); await p.waitForTimeout(50);
+  check(/seasons? · \d+ teams?/.test(await p.locator(".career-facts").first().innerText()), "career details open");
+  await p.locator('.player:not(.end) button:has-text("Route around")').first().click(); await p.waitForTimeout(100);
   check(await p.isVisible("#avoiding"), "route around a player");
+  check((await p.locator("#today-grid .game").count()) === 4, "today's puzzles shows four games");
   await p.click("#random"); await p.waitForTimeout(100);
   check((await p.locator(".chain .player").count()) >= 2, "random pair");
 
@@ -80,6 +83,7 @@ function serve() {
   await p.reload(); await p.waitForTimeout(300);
   check(await p.evaluate(() => G.done), "progress is saved");
   check(await p.locator('nav.site a[data-game="chain"].done').count() === 1, "page link shows today's puzzle is done");
+  check(await p.locator(".dist-row.today").count() === 1, "results history highlights today");
   await p.click("#mode-practice"); await p.click("#giveup"); await p.waitForTimeout(50);
   check(await p.isVisible("#result"), "practice and give up");
 
@@ -114,6 +118,15 @@ function serve() {
   check(/No player/.test(await p.innerText("#feedback")), "unknown name is a miss");
   await p.click("#done");
   check(await p.isVisible("#result") && (await p.locator(".slot.missed").count()) > 0, "finishing shows everyone missed");
+
+  console.log("Main page after playing");
+  p = await open("index.html");
+  check(/✓/.test(await p.locator('.game[href="chain.html"]').innerText()), "today's puzzles shows the chain as done");
+  check(/✓/.test(await p.locator('.game[href="longer.html"]').innerText()), "today's puzzles shows the daily 10 as done");
+
+  console.log("Missing page");
+  const r = await (await ctx.newPage()).goto(base + "404.html");
+  check(r.status() === 200, "404 page exists");
 
   console.log("Phone layout");
   const phone = await browser.newContext({ viewport: { width: 390, height: 900 }, colorScheme: "dark" });

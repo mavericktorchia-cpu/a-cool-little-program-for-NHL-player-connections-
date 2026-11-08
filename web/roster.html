@@ -59,7 +59,7 @@ input[type="text"]:disabled { opacity: .5; }
   border-radius: 5px; text-align: center; padding: 4px 0;
 }
 .slot .n { font-weight: 600; font-size: 15px; line-height: 1.15; overflow-wrap: anywhere; }
-.slot.empty .n { color: var(--rule); letter-spacing: .2em; }
+.slot.empty .n { color: var(--muted); letter-spacing: .2em; }
 .slot.found { border-style: solid; border-color: var(--good); background: var(--good-wash); }
 .slot.found .p { background: var(--good); color: #fff; }
 .slot.missed { border-style: solid; }
@@ -362,6 +362,7 @@ function render(popped) {
       el.innerHTML = '<span class="p"></span><span class="n"></span>';
       el.querySelector(".p").textContent = posName[P[i].pos] || "?";
       el.querySelector(".n").textContent = found || G.ended ? P[i].name : "• • •";
+      if (!found && !G.ended) el.setAttribute("aria-label", `Unnamed ${posName[P[i].pos] || "player"}`);
       slots.appendChild(el);
     }
     board.appendChild(sec);
@@ -391,9 +392,10 @@ function renderResult() {
   box.querySelector(".verdict p").textContent = `You named ${pct}% of the roster. Everyone you missed is filled in below.`;
   box.querySelector("#share-text").textContent = shareText();
   const cd = box.querySelector(".countdown");
-  if (mode === "daily") startCountdown(cd); else cd.remove();
+  if (mode === "daily") { startCountdown(cd); cd.before(historyChart("roster")); } else cd.remove();
   const copyBtn = box.querySelector("#copy");
   copyBtn.dataset.label = "Copy result";
+  prepareShare(copyBtn);
   copyBtn.addEventListener("click", () => copyText(copyBtn, shareText(), box.querySelector("#share-text")));
   const again = box.querySelector("#again");
   again.textContent = mode === "daily" ? "Play a practice roster" : "New roster";

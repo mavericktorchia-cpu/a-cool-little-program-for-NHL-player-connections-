@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/sitemap.xml

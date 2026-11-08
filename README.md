@@ -52,8 +52,12 @@ To rebuild by hand after `update`: `python web/build.py`. To run the browser
 test: `npm i playwright && npx playwright install chromium && node tests/smoke.js`.
 The link-preview image and app icons come from `node web/make-images.js`.
 
-The daily games show a ✓ on their page link once today's puzzle is done, and
-a countdown to the next one. Progress and streaks are saved in your browser.
+The main page opens with **Today's puzzles**: a card for each daily game with
+your result and streak. Page links show a ✓ once a puzzle is done, finished
+games show a countdown to the next one and a chart of your past results, and
+on phones **Share result** opens the share sheet. Every player in a connection
+has a **Career** button: seasons, teams in order, and most frequent teammates.
+Progress is saved in your browser.
 
 ## Game: Build the Chain
 
