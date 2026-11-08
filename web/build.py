@@ -45,6 +45,12 @@ PAGES = [
         "Mystery Player",
         "A daily NHL guessing game: name the mystery player from as few clues as you can.",
     ),
+    (
+        "longer.html",
+        "longer.html",
+        "Who Played Longer?",
+        "Two NHL players, one stat: pick who played more seasons, for more teams, or with more teammates.",
+    ),
 ]
 
 

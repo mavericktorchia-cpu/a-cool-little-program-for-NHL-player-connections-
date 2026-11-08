@@ -82,6 +82,21 @@ result) and a practice mode with **Stars** or **Deep cuts**.
 Play it at
 https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/mystery.html
 
+## Game: Who Played Longer?
+
+`docs/longer.html` puts two players side by side and asks who wins a stat:
+more **seasons** on NHL rosters, more **teams**, or more **different
+teammates**. Tap a player to see both numbers.
+
+* **Daily 10:** ten rounds, the same for everyone each day (4 seasons, 3 teams,
+  3 teammates), with a shareable score. Daily rounds use retired players only,
+  so the answers never change mid-day.
+* **Endless:** the winner stays on and a new challenger steps in. The gap gets
+  smaller as your streak grows. Your best streak is saved for each stat.
+
+Play it at
+https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/longer.html
+
 ## Quick start (command line)
 
 You only need Python 3.9 or newer. There's nothing to install.
@@ -154,7 +169,7 @@ nhl_connections/
   data.py    # downloads and saves / loads the roster file
   graph.py   # teammate graph, name lookup, shortest path search
   cli.py     # command-line interface
-web/       # page templates (template.html, chain.html, mystery.html) + build script
+web/       # page templates (template.html, chain.html, mystery.html, longer.html) + build script
 docs/      # built pages (GitHub Pages)
 data/nhl_rosters.json.gz
 tests/       # offline unit tests:  python -m unittest

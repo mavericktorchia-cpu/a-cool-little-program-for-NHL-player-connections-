@@ -1,0 +1,518 @@
+<title>Who Played Longer?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a faceoff. Two player cards meet at a center dot; the question sits above, the score below. */
+:root {
+  --ice: #eef3f7;
+  --boards: #ffffff;
+  --ink: #0d1b2a;
+  --muted: #566778;
+  --rule: #d3dde6;
+  --red: #c8102e;
+  --blue: #1d4f9e;
+  --blue-wash: #e3ecf8;
+  --good: #1d7a46;
+  --good-wash: #e2f3e8;
+  --bad-wash: #fbe5e8;
+  --display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
+    --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; --bad-wash: #3a1820; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
+  --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; --bad-wash: #3a1820; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--ice); }
+body {
+  color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 820px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 24px; }
+
+nav.site { display: flex; gap: 6px; flex-wrap: wrap; font-size: 14px; }
+nav.site a {
+  color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule); font-weight: 500;
+}
+nav.site a[aria-current="page"] { background: var(--ink); color: var(--ice); border-color: var(--ink); }
+nav.site a:hover { border-color: var(--blue); }
+
+header { display: grid; gap: 6px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.eyebrow::before { content: ""; width: 28px; height: 3px; background: var(--blue); }
+h1 {
+  font-family: var(--display); font-weight: 900; font-size: clamp(44px, 9vw, 76px);
+  line-height: .92; margin: 0; text-transform: uppercase; text-wrap: balance;
+}
+h1 span { color: var(--red); }
+.lede { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+
+button {
+  font: 600 15px/1 var(--body); border-radius: 8px; cursor: pointer; border: 1px solid var(--rule);
+  background: var(--boards); color: var(--ink); padding: 11px 15px;
+}
+button:hover:not(:disabled) { border-color: var(--blue); }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.primary {
+  background: var(--red); border-color: var(--red); color: #fff; font-family: var(--display);
+  font-weight: 800; font-size: 19px; letter-spacing: .06em; text-transform: uppercase;
+}
+.primary:hover:not(:disabled) { filter: brightness(1.08); border-color: var(--red); }
+
+.modes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 9px; padding: 3px; background: var(--boards); gap: 3px; }
+.seg button { border: 0; padding: 8px 14px; border-radius: 6px; background: transparent; font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--ice); }
+.opts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* ---------- scoreboard ---------- */
+.board { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.score { display: flex; gap: 22px; flex-wrap: wrap; }
+.score div { display: grid; }
+.score .k { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.score .v { font-family: var(--display); font-weight: 900; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+.score .v.hot { color: var(--red); }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 22px; height: 10px; border-radius: 3px; background: var(--rule); }
+.dots i.cur { background: var(--blue); }
+.dots i.yes { background: var(--good); }
+.dots i.no { background: var(--red); }
+
+.question {
+  font-family: var(--display); font-weight: 800; font-size: clamp(26px, 5vw, 36px); line-height: 1.05;
+  text-transform: uppercase; margin: 0; text-wrap: balance;
+}
+.question span { color: var(--red); }
+.qnote { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+/* ---------- faceoff ---------- */
+.faceoff { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: stretch; }
+@media (max-width: 600px) { .faceoff { grid-template-columns: 1fr; } .vs { justify-self: center; } }
+.vs {
+  align-self: center; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--red); color: #fff; font-family: var(--display); font-weight: 900; font-size: 20px;
+  box-shadow: 0 0 0 6px var(--ice), 0 0 0 8px var(--red);
+}
+.pcard {
+  text-align: left; display: grid; gap: 10px; align-content: start; padding: 20px; border-radius: 12px;
+  border: 2px solid var(--rule); background: var(--boards); color: var(--ink); min-width: 0; font: inherit; cursor: pointer;
+  transition: border-color .15s, transform .15s;
+}
+.pcard:hover:not(:disabled) { border-color: var(--blue); transform: translateY(-2px); }
+.pcard:disabled { cursor: default; opacity: 1; }
+.pcard .pos { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.pcard .nm { font-family: var(--display); font-weight: 800; font-size: clamp(30px, 5vw, 40px); line-height: .95; text-transform: uppercase; overflow-wrap: anywhere; }
+.pcard .stat { display: grid; gap: 2px; border-top: 1px dashed var(--rule); padding-top: 10px; min-height: 92px; }
+.pcard .num { font-family: var(--display); font-weight: 900; font-size: 56px; line-height: .9; font-variant-numeric: tabular-nums; }
+.pcard .unit { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.pcard .tap { font-weight: 600; color: var(--blue); align-self: center; }
+.pcard .detail { font-family: var(--mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.pcard.win { border-color: var(--good); background: var(--good-wash); }
+.pcard.win .num { color: var(--good); }
+.pcard.lose .num { color: var(--muted); }
+.pcard.picked.lose { border-color: var(--red); background: var(--bad-wash); }
+.pcard .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 500; }
+.pcard.win .tag { color: var(--good); }
+.pcard.picked.lose .tag { color: var(--red); }
+
+.after { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; min-height: 46px; }
+.feedback { margin: 0; font-weight: 600; font-size: 18px; }
+.feedback.ok { color: var(--good); }
+.feedback.bad { color: var(--red); }
+
+/* ---------- result ---------- */
+.result { background: var(--boards); border: 2px solid var(--ink); border-radius: 12px; padding: 18px; display: grid; gap: 14px; }
+.verdict { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.big { font-family: var(--display); font-weight: 900; font-size: 84px; line-height: .8; color: var(--red); font-variant-numeric: tabular-nums; }
+.verdict h2 { font-family: var(--display); font-weight: 800; font-size: 30px; text-transform: uppercase; margin: 0; line-height: 1; }
+.verdict p { margin: 4px 0 0; color: var(--muted); }
+.result h3 { font-size: 14px; margin: 4px 0 0; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.share-box {
+  font-family: var(--mono); font-size: 13px; white-space: pre-wrap; background: var(--ice); border-radius: 8px; padding: 10px 12px; margin: 0;
+  user-select: all; overflow-wrap: anywhere;
+}
+.tools { display: flex; gap: 8px; flex-wrap: wrap; }
+
+details.how { background: var(--boards); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; }
+details.how summary { cursor: pointer; font-weight: 600; }
+details.how ul { margin: 10px 0 2px; padding-left: 20px; display: grid; gap: 4px; }
+
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; display: grid; gap: 6px; }
+footer a { color: var(--blue); }
+@media (prefers-reduced-motion: no-preference) {
+  .pcard.enter { animation: slide .3s ease-out both; }
+  @keyframes slide { from { transform: translateX(14px); opacity: .3; } to { transform: none; opacity: 1; } }
+}
+</style>
+
+<div class="wrap">
+  <nav class="site" aria-label="Pages">
+    <a href="index.html">Find a connection</a>
+    <a href="chain.html">Build the Chain</a>
+    <a href="mystery.html">Mystery Player</a>
+    <a href="longer.html" aria-current="page">Who Played Longer?</a>
+  </nav>
+
+  <header>
+    <div class="eyebrow" id="eyebrow">Daily 10</div>
+    <h1>Who Played <span>Longer?</span></h1>
+    <p class="lede">Two players, one stat. Tap the player you think comes out ahead, then see the numbers.</p>
+  </header>
+
+  <div class="modes">
+    <div class="seg" role="group" aria-label="Mode">
+      <button type="button" id="mode-daily" aria-pressed="true">Daily 10</button>
+      <button type="button" id="mode-endless" aria-pressed="false">Endless</button>
+    </div>
+    <div class="opts" id="endless-opts" hidden>
+      <div class="seg" role="group" aria-label="Stat">
+        <button type="button" data-stat="seasons" aria-pressed="true">Seasons</button>
+        <button type="button" data-stat="teams" aria-pressed="false">Teams</button>
+        <button type="button" data-stat="mates" aria-pressed="false">Teammates</button>
+        <button type="button" data-stat="mixed" aria-pressed="false">Mixed</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="score" id="score"></div>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+  </div>
+
+  <div>
+    <h2 class="question" id="question"></h2>
+    <p class="qnote" id="qnote"></p>
+  </div>
+
+  <section class="faceoff" aria-label="Pick a player">
+    <button type="button" class="pcard" id="card-0"></button>
+    <div class="vs" aria-hidden="true">VS</div>
+    <button type="button" class="pcard" id="card-1"></button>
+  </section>
+
+  <div class="after">
+    <p class="feedback" id="feedback" aria-live="polite"></p>
+    <button type="button" class="primary" id="next" hidden>Next</button>
+  </div>
+
+  <section class="result" id="result" hidden aria-live="polite"></section>
+
+  <details class="how">
+    <summary>How to play</summary>
+    <ul>
+      <li><b>Seasons</b> counts every season a player was on an NHL roster. <b>Teams</b> counts different team names, so a franchise that moved (Quebec to Colorado) counts twice. <b>Teammates</b> counts everyone they shared a roster with.</li>
+      <li><b>Daily 10:</b> ten rounds, the same for everyone today, mixing all three stats. Share your score.</li>
+      <li><b>Endless:</b> the winner stays on and you keep going until you miss. Pairs get closer as your streak grows.</li>
+      <li>Ties never come up: every pair has a clear winner.</li>
+    </ul>
+  </details>
+
+  <footer>
+    <div id="stats"></div>
+    <div>Stats come from season-by-season NHL rosters in the public NHL API. Fan project, not affiliated with or endorsed by the National Hockey League. <a href="https://github.com/mavericktorchia-cpu/a-cool-little-program-for-NHL-player-connections-">Source on GitHub</a></div>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const SITE = "https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/longer.html";
+const FIRST_DAY = Date.UTC(2026, 10, 7); // daily #1
+const ROUNDS = 10;
+
+/* ---------- data ---------- */
+const P = DATA.p.map(([id, name, pos]) => ({ id, name, pos, stints: [] }));
+const keys = Object.keys(DATA.r).sort((x, y) => x.split("-")[1] - y.split("-")[1] || (x < y ? -1 : 1));
+const R = keys.map(k => DATA.r[k]);
+keys.forEach((k, s) => R[s].forEach(i => P[i].stints.push(s)));
+const team = s => keys[s].split("-")[0];
+const season = s => keys[s].split("-")[1];
+const posLong = { C: "Center", L: "Left wing", R: "Right wing", D: "Defenseman", G: "Goalie" };
+
+const memo = {};
+const STATS = {
+  seasons: {
+    q: 'Who spent more <span>seasons</span> on NHL rosters?', unit: n => n === 1 ? "season" : "seasons",
+    note: "Every season on a team's roster counts, even partial ones.",
+    of: i => new Set(P[i].stints.map(season)).size, gaps: [5, 3, 1],
+  },
+  teams: {
+    q: 'Who played for more <span>NHL teams</span>?', unit: n => n === 1 ? "team" : "teams",
+    note: "A franchise that moved counts as a new team.",
+    of: i => new Set(P[i].stints.map(team)).size, gaps: [3, 2, 1],
+  },
+  mates: {
+    q: 'Who had more <span>different teammates</span>?', unit: n => n === 1 ? "teammate" : "teammates",
+    note: "Everyone they ever shared a season roster with.",
+    of: i => { const s = new Set(); for (const st of P[i].stints) for (const o of R[st]) if (o !== i) s.add(o); return s.size; },
+    gaps: [150, 60, 10],
+  },
+};
+const value = (stat, i) => ((memo[stat] ||= new Map()).has(i) ? memo[stat].get(i) : memo[stat].set(i, STATS[stat].of(i)).get(i));
+function detail(i) {
+  const p = P[i];
+  const first = season(p.stints[0]).slice(0, 4), last = season(p.stints[p.stints.length - 1]).slice(4);
+  return `${first}–${last} · ${[...new Set(p.stints.map(team))].join("/")}`;
+}
+const debutDecade = i => Math.floor(+season(P[i].stints[0]).slice(0, 4) / 10) * 10;
+
+/* ---------- pools ---------- */
+// Daily rounds use retired players only (last roster season before 2024-25), so their numbers
+// never change and today's answers stay the same after weekly roster updates.
+const CUTOFF = 20242025;
+const seasonsOf = i => new Set(P[i].stints.map(season)).size;
+const lastSeason = i => +season(P[i].stints[P[i].stints.length - 1]);
+const POOL_DAILY = P.map((p, i) => i).filter(i => p_ok(i) && lastSeason(i) < CUTOFF && seasonsOf(i) >= 10);
+const POOL_ENDLESS = P.map((p, i) => i).filter(i => p_ok(i) && seasonsOf(i) >= 8);
+function p_ok(i) { return P[i].stints.length > 0; }
+
+function mulberry32(seed) {
+  return () => {
+    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+// Find an opponent for `a` whose stat differs by at least `gap` (and never ties).
+function opponent(rand, pool, stat, a, gap, avoid) {
+  const va = value(stat, a);
+  let fallback = null;
+  for (let t = 0; t < 400; t++) {
+    const b = pool[Math.floor(rand() * pool.length)];
+    if (b === a || avoid.has(b)) continue;
+    const d = Math.abs(value(stat, b) - va);
+    if (d === 0) continue;
+    if (d >= gap && d <= gap * 4) return b;
+    if (!fallback || Math.abs(d - gap) < Math.abs(Math.abs(value(stat, fallback) - va) - gap)) fallback = b;
+  }
+  return fallback;
+}
+const gapFor = (stat, step) => STATS[stat].gaps[step < 3 ? 0 : step < 7 ? 1 : 2];
+
+/* ---------- dates & storage ---------- */
+const today = new Date();
+const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+const dailyNo = Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - FIRST_DAY) / 86400000) + 1;
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+
+function dailyRounds() {
+  const rand = mulberry32((+dateKey.replace(/-/g, "")) * 104729 + 3);
+  // Always 4 seasons rounds and 3 each of teams and teammates, shuffled.
+  const order = ["seasons", "seasons", "seasons", "seasons", "teams", "teams", "teams", "mates", "mates", "mates"];
+  for (let k = order.length - 1; k > 0; k--) { const j = Math.floor(rand() * (k + 1)); [order[k], order[j]] = [order[j], order[k]]; }
+  const rounds = [], used = new Set();
+  for (let k = 0; k < ROUNDS; k++) {
+    const stat = order[k];
+    let a;
+    do { a = POOL_DAILY[Math.floor(rand() * POOL_DAILY.length)]; } while (used.has(a));
+    used.add(a);
+    const b = opponent(rand, POOL_DAILY, stat, a, gapFor(stat, k), used);
+    used.add(b);
+    rounds.push(rand() < 0.5 ? { stat, pair: [a, b] } : { stat, pair: [b, a] });
+  }
+  return rounds;
+}
+
+/* ---------- game ---------- */
+let mode = "daily", endlessStat = "seasons";
+let D; // daily: { rounds, k, answers:[bool] }
+let E; // endless: { pair, stat, streak, over, seen:Set }
+let answered = null; // index picked this round, or null
+const $ = id => document.getElementById(id);
+
+function current() {
+  return mode === "daily" ? D.rounds[Math.min(D.k, ROUNDS - 1)] : { stat: E.stat, pair: E.pair };
+}
+function startDaily() {
+  mode = "daily";
+  D = { rounds: dailyRounds(), k: 0, answers: [] };
+  const saved = store.get("longer-daily-" + dateKey);
+  if (saved && Array.isArray(saved.answers)) { D.answers = saved.answers.slice(0, ROUNDS); D.k = D.answers.length; }
+  answered = null;
+  render();
+}
+function pickStat() { return endlessStat === "mixed" ? ["seasons", "teams", "mates"][Math.floor(Math.random() * 3)] : endlessStat; }
+function startEndless() {
+  mode = "endless";
+  const stat = pickStat();
+  const a = POOL_ENDLESS[Math.floor(Math.random() * POOL_ENDLESS.length)];
+  const seen = new Set([a]);
+  const b = opponent(Math.random, POOL_ENDLESS, stat, a, gapFor(stat, 0), seen);
+  seen.add(b);
+  E = { pair: [a, b], stat, streak: 0, over: false, seen };
+  answered = null;
+  render();
+}
+
+function choose(side) {
+  if (answered !== null) return;
+  if (mode === "daily" && D.k >= ROUNDS) return;
+  if (mode === "endless" && E.over) return;
+  const { stat, pair } = current();
+  const v0 = value(stat, pair[0]), v1 = value(stat, pair[1]);
+  const winner = v0 > v1 ? 0 : 1;
+  const right = side === winner;
+  answered = side;
+  const w = P[pair[winner]].name, l = P[pair[1 - winner]].name;
+  if (mode === "daily") {
+    D.answers.push(right);
+    store.set("longer-daily-" + dateKey, { answers: D.answers });
+  } else if (right) {
+    E.streak++;
+    const best = store.get("longer-best-" + endlessStat) || 0;
+    if (E.streak > best) store.set("longer-best-" + endlessStat, E.streak);
+  } else E.over = true;
+  say(right ? `Correct! ${w} wins.` : `No. ${w} beats ${l}.`, right ? "ok" : "bad");
+  render();
+}
+function next() {
+  if (mode === "daily") { D.k++; answered = null; say(""); render(); return; }
+  if (E.over) { startEndless(); say(""); return; }
+  // The winner stays on; a new challenger steps in.
+  const { stat, pair } = current();
+  const winner = value(stat, pair[0]) > value(stat, pair[1]) ? pair[0] : pair[1];
+  const nextStat = pickStat();
+  const challenger = opponent(Math.random, POOL_ENDLESS, nextStat, winner, gapFor(nextStat, E.streak), E.seen);
+  E.seen.add(challenger);
+  E.pair = [winner, challenger]; E.stat = nextStat;
+  answered = null; say(""); render(true);
+}
+function say(msg, kind = "") { const f = $("feedback"); f.textContent = msg; f.className = "feedback " + kind; }
+
+/* ---------- rendering ---------- */
+function render(slide) {
+  const daily = mode === "daily";
+  const finished = daily && D.k >= ROUNDS;
+  $("mode-daily").setAttribute("aria-pressed", daily);
+  $("mode-endless").setAttribute("aria-pressed", !daily);
+  $("endless-opts").hidden = daily;
+  $("eyebrow").textContent = daily
+    ? `Daily 10 #${dailyNo} · ${today.toLocaleDateString(undefined, { month: "long", day: "numeric" })}`
+    : `Endless · ${endlessStat === "mixed" ? "mixed stats" : endlessStat === "mates" ? "teammates" : endlessStat}`;
+
+  // scoreboard
+  if (daily) {
+    const right = D.answers.filter(Boolean).length;
+    $("score").innerHTML = `<div><span class="k">Round</span><span class="v">${Math.min(D.k + 1, ROUNDS)}/${ROUNDS}</span></div><div><span class="k">Correct</span><span class="v hot">${right}</span></div>`;
+    $("dots").innerHTML = Array.from({ length: ROUNDS }, (_, k) =>
+      `<i class="${k < D.answers.length ? (D.answers[k] ? "yes" : "no") : k === D.k ? "cur" : ""}"></i>`).join("");
+  } else {
+    const best = store.get("longer-best-" + endlessStat) || 0;
+    $("score").innerHTML = `<div><span class="k">Streak</span><span class="v hot">${E.streak}</span></div><div><span class="k">Best</span><span class="v">${best}</span></div>`;
+    $("dots").innerHTML = "";
+  }
+
+  const { stat, pair } = current();
+  const S = STATS[stat];
+  $("question").innerHTML = S.q;
+  $("qnote").textContent = S.note;
+
+  // A finished daily shows its last round as it was answered.
+  const reveal = answered !== null || finished;
+  const v = pair.map(i => value(stat, i));
+  const winner = v[0] > v[1] ? 0 : 1;
+  pair.forEach((pi, side) => {
+    const c = $("card-" + side);
+    c.disabled = reveal;
+    c.className = "pcard" + (slide && side === 1 ? " enter" : "")
+      + (reveal ? (side === winner ? " win" : " lose") : "") + (answered === side ? " picked" : "");
+    c.innerHTML = '<span class="pos"></span><span class="nm"></span><span class="stat"></span>';
+    c.querySelector(".pos").textContent = `${posLong[P[pi].pos] || "Player"} · debut ${debutDecade(pi)}s`;
+    c.querySelector(".nm").textContent = P[pi].name;
+    const st = c.querySelector(".stat");
+    if (reveal) {
+      st.innerHTML = '<span class="tag"></span><span class="num"></span><span class="unit"></span><span class="detail"></span>';
+      st.querySelector(".tag").textContent = side === winner ? "Winner" : answered === side ? "Your pick" : "";
+      st.querySelector(".num").textContent = v[side].toLocaleString();
+      st.querySelector(".unit").textContent = S.unit(v[side]);
+      st.querySelector(".detail").textContent = detail(pi);
+    } else {
+      st.innerHTML = '<span class="tap">Tap to pick</span>';
+    }
+    c.setAttribute("aria-label", reveal ? `${P[pi].name}: ${v[side]} ${S.unit(v[side])}` : `Pick ${P[pi].name}`);
+  });
+
+  const nb = $("next");
+  nb.hidden = !(answered !== null) || finished;
+  if (daily) nb.textContent = D.k === ROUNDS - 1 ? "See score" : "Next round";
+  else nb.textContent = E.over ? "Play again" : "Next";
+  if (daily && D.k === ROUNDS - 1 && answered !== null) nb.hidden = false;
+  if (!nb.hidden) nb.focus({ preventScroll: true });
+
+  renderResult();
+}
+
+function shareText() {
+  const right = D.answers.filter(Boolean).length;
+  return `Who Played Longer? #${dailyNo}\n${D.answers.map(a => a ? "🟩" : "🟥").join("")} ${right}/${ROUNDS}\n${SITE}`;
+}
+function renderResult() {
+  const box = $("result");
+  const show = (mode === "daily" && D.k >= ROUNDS) || (mode === "endless" && E.over);
+  box.hidden = !show;
+  if (!show) return;
+  if (mode === "daily") {
+    const right = D.answers.filter(Boolean).length;
+    const title = right === ROUNDS ? "Perfect 10" : right >= 8 ? "Hall of Famer" : right >= 6 ? "Solid shift" : right >= 4 ? "Fourth line" : "Healthy scratch";
+    box.innerHTML = `
+      <div class="verdict"><div class="big">${right}/${ROUNDS}</div><div><h2></h2><p>Come back tomorrow for a new Daily 10, or keep going in Endless.</p></div></div>
+      <div><h3>Share your result</h3></div>
+      <pre class="share-box" id="share-text"></pre>
+      <div class="tools"><button type="button" class="primary" id="copy">Copy result</button><button type="button" id="go-endless">Play Endless</button></div>`;
+    box.querySelector("h2").textContent = title;
+    box.querySelector("#share-text").textContent = shareText();
+    box.querySelector("#copy").addEventListener("click", async e => {
+      const btn = e.currentTarget;
+      try { await navigator.clipboard.writeText(shareText()); btn.textContent = "Copied"; }
+      catch (err) {
+        const sel = window.getSelection(), r = document.createRange();
+        r.selectNodeContents(box.querySelector("#share-text")); sel.removeAllRanges(); sel.addRange(r);
+        btn.textContent = "Selected. Press Ctrl+C to copy";
+      }
+    });
+    box.querySelector("#go-endless").addEventListener("click", () => { say(""); startEndless(); });
+  } else {
+    const best = store.get("longer-best-" + endlessStat) || 0;
+    const isBest = E.streak > 0 && E.streak >= best;
+    box.innerHTML = `<div class="verdict"><div class="big">${E.streak}</div><div><h2>${isBest ? "New best streak" : "Streak over"}</h2><p>Your best ${endlessStat === "mixed" ? "mixed" : endlessStat === "mates" ? "teammates" : endlessStat} streak is ${best}. Press Play again to start a new run.</p></div></div>`;
+  }
+}
+
+/* ---------- controls ---------- */
+$("card-0").addEventListener("click", () => choose(0));
+$("card-1").addEventListener("click", () => choose(1));
+$("next").addEventListener("click", next);
+$("mode-daily").addEventListener("click", () => { say(""); startDaily(); });
+$("mode-endless").addEventListener("click", () => { say(""); startEndless(); });
+document.querySelectorAll("[data-stat]").forEach(b => b.addEventListener("click", () => {
+  endlessStat = b.dataset.stat;
+  document.querySelectorAll("[data-stat]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  say(""); startEndless();
+}));
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input, textarea")) return;
+  if (e.key === "ArrowLeft" || e.key === "1") choose(0);
+  if (e.key === "ArrowRight" || e.key === "2") choose(1);
+});
+
+$("stats").textContent = `${keys.length.toLocaleString()} team-season rosters · ${P.length.toLocaleString()} players · data updated ${DATA.built}`;
+location.hash === "#endless" ? startEndless() : startDaily();
+</script>
