@@ -161,10 +161,17 @@ def main() -> None:
     site_css = (web / "site.css").read_text(encoding="utf-8")
     # Any change to the data, shared code or a page gives a new version (and fresh offline copies).
     templates = "".join((web / t).read_text(encoding="utf-8") for t, _, _, _ in PAGES)
+    templates += "".join(f.name for f in sorted((web / "fonts").glob("*.woff2")))
     version = hashlib.sha256((data_js + common_js + site_css + templates + (web / "sw.js").read_text(encoding="utf-8")).encode("utf-8")).hexdigest()[:10]
     for name, text in (("data.js", data_js), ("common.js", common_js)):
         (DOCS / name).write_text(text, encoding="utf-8")
         print(f"Wrote {DOCS / name} ({len(text.encode('utf-8')) / 1024:.0f} KB)")
+
+    fonts = DOCS / "fonts"
+    fonts.mkdir(exist_ok=True)
+    font_files = sorted((web / "fonts").glob("*.woff2"))
+    for font in font_files:
+        shutil.copyfile(font, fonts / font.name)
 
     icons = DOCS / "icons"
     icons.mkdir(exist_ok=True)
@@ -183,15 +190,21 @@ def main() -> None:
         head, content = body[:split], body[split:]
         style = head.index("<style>")
         head = head[:style] + shared_head + head[style:]  # page styles come after the shared ones
-        # Load Google Fonts without blocking the first paint; text shows in a fallback face until then.
-        head = head.replace(
-            '<link rel="stylesheet" href="https://fonts.googleapis.com/',
-            '<link rel="stylesheet" media="print" onload="this.media=\'all\'" href="https://fonts.googleapis.com/',
-        )
+        # Preload the two faces seen first, so they're ready for the first paint.
+        head = (
+            '<link rel="preload" href="fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>\n'
+            '<link rel="preload" href="fonts/barlow-400.woff2" as="font" type="font/woff2" crossorigin>\n'
+        ) + head
         script = content.index("<script>")
         content = content[:script] + shared_scripts + content[script:]
+        # Show the game area only once the page's own script has run (see html.loading in site.css).
+        content = content.rstrip() + '\n<script>document.documentElement.classList.remove("loading");</script>\n'
+        loading = (
+            '<script>document.documentElement.classList.add("loading");'
+            'setTimeout(function () { document.documentElement.classList.remove("loading"); }, 8000);</script>\n'
+        )
         page = (
-            '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+            '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' + loading +
             '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
             + head_extra(title, description, url) + head + "</head>\n<body>\n" + content + "\n</body>\n</html>\n"
         )
@@ -224,7 +237,7 @@ def main() -> None:
     precache = ["./"] + [out for _, out, _, _ in PAGES] + [
         f"common.js?v={version}", f"data.js?v={version}",
         "manifest.webmanifest", "icons/icon-192.png", "og.png",
-    ]
+    ] + [f"fonts/{f.name}" for f in font_files]
     sw = (web / "sw.js").read_text(encoding="utf-8")
     sw = sw.replace("__VERSION__", version).replace("__PRECACHE__", json.dumps(precache))
     (DOCS / "sw.js").write_text(sw, encoding="utf-8")

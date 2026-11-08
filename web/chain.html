@@ -1,8 +1,5 @@
 <title>Build the Chain</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: one column like a rink diagram. The chain you build hangs on the red center line, the target waits at the far end. */
 .wrap { max-width: 760px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 24px; }
@@ -116,10 +113,11 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
     </div>
   </div>
 
-  <section class="matchup" id="matchup" aria-label="Puzzle"></section>
-  <div class="par" id="par"></div>
+  <!-- Placeholders the same size as the real content, so nothing jumps when the puzzle loads. -->
+  <section class="matchup" id="matchup" aria-label="Puzzle"><div class="side"><div class="label">Start</div><div class="nm">&nbsp;</div><div class="mt">&nbsp;</div></div><div class="arrow" aria-hidden="true">→</div><div class="side"><div class="label">Target</div><div class="nm">&nbsp;</div><div class="mt">&nbsp;</div></div></section>
+  <div class="par" id="par"><span>Par <b>–</b> links</span><span>Links so far <b>0</b></span><span>Misses <b>0</b></span><span>Hints <b>0</b></span></div>
 
-  <ol class="chain open" id="chain"></ol>
+  <ol class="chain open" id="chain"><li class="player end"><div class="puck">0</div><div class="plate"><div class="name">&nbsp;</div><div class="meta">&nbsp;</div></div></li><li class="link gap"><div class="via">? ? ?</div></li><li class="player goal"><div class="puck">★</div><div class="plate"><div class="name">&nbsp;</div><div class="meta">&nbsp;</div></div></li></ol>
 
   <form class="guess" id="guess" autocomplete="off">
     <label for="g">Who played with <span id="last-name"></span>?</label>

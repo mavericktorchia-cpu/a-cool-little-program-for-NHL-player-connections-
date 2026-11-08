@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>document.documentElement.classList.add("loading");setTimeout(function () { document.documentElement.classList.remove("loading"); }, 8000);</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Two NHL players, one stat: pick who played more seasons, for more teams, or with more teammates.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c8102e'/%3E%3Crect x='29' y='4' width='6' height='56' fill='%23fff'/%3E%3Ccircle cx='32' cy='32' r='10' fill='none' stroke='%23fff' stroke-width='5'/%3E%3C/svg%3E">
@@ -22,14 +23,23 @@
 <meta name="apple-mobile-web-app-title" content="NHL Connections">
 <meta name="theme-color" content="#eef3f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a131e" media="(prefers-color-scheme: dark)">
+<link rel="preload" href="fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/barlow-400.woff2" as="font" type="font/woff2" crossorigin>
 <title>Who Played Longer?</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Shared look for every page: rink colors, type, page links, buttons, results and footer.
    Each page adds its own layout on top. */
+/* Fonts are hosted with the site (web/fonts). "optional" means: use them if they're ready for the
+   first paint (they're preloaded, and cached after one visit), otherwise keep the fallback rather
+   than swapping later and shifting the page. */
+@font-face { font-family: "Big Shoulders Display"; font-style: normal; font-weight: 700 900; font-display: optional; src: url(fonts/big-shoulders-display.woff2) format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: optional; src: url(fonts/barlow-400.woff2) format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: optional; src: url(fonts/barlow-500.woff2) format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: optional; src: url(fonts/barlow-600.woff2) format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: optional; src: url(fonts/ibm-plex-mono-400.woff2) format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: optional; src: url(fonts/ibm-plex-mono-500.woff2) format("woff2"); }
+
 :root {
   --ice: #eef3f7;
   --boards: #ffffff;
@@ -188,6 +198,11 @@ footer a { color: var(--blue); }
 .dist-row.today .dist-bar { background: var(--good); }
 .dist-row.today .dist-label { color: var(--ink); font-weight: 600; }
 .dist-n { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Until the page's script has filled in the game, keep everything below the heading invisible
+   (its space is still reserved) so nothing visibly jumps. A timer in <head> lifts this after 8 s
+   in case a script fails. */
+html.loading .wrap > :not(nav):not(header) { visibility: hidden; }
 </style>
 <style>
 /* Layout: a faceoff. Two player cards meet at a center dot; the question sits above, the score below. */
@@ -330,8 +345,8 @@ footer a { color: var(--blue); }
   </footer>
 </div>
 
-<script src="data.js?v=f4894c9436"></script>
-<script src="common.js?v=f4894c9436"></script>
+<script src="data.js?v=512ea13b85"></script>
+<script src="common.js?v=512ea13b85"></script>
 <script>
 const SITE = SITE_ROOT + "longer.html";
 const FIRST_DAY = Date.UTC(2026, 10, 7); // daily #1
@@ -596,6 +611,7 @@ document.addEventListener("keydown", e => {
 if (firstVisit("longer")) { $("how").open = true; markSeen("longer"); }
 location.hash === "#endless" ? startEndless() : startDaily();
 </script>
+<script>document.documentElement.classList.remove("loading");</script>
 
 </body>
 </html>

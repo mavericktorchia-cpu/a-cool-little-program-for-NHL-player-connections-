@@ -1,8 +1,5 @@
 <title>Mystery Player</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: one column. A scouting card of numbered clues fills in from the top; guesses stack below it with how close each one was. */
 .wrap { max-width: 760px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 24px; }
@@ -118,10 +115,11 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
 
   <section class="card" id="card" aria-label="Scouting report">
     <div class="card-head">
-      <div class="who"><div class="silhouette" id="sil">?</div><div><div class="nm" id="who-name">Mystery player</div><div class="sub" id="who-sub"></div></div></div>
-      <div class="meter" id="meter" aria-hidden="true"></div>
+      <div class="who"><div class="silhouette" id="sil">?</div><div><div class="nm" id="who-name">Mystery player</div><div class="sub" id="who-sub">Clue 1 of 7</div></div></div>
+      <div class="meter" id="meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     </div>
-    <ol class="clues" id="clues"></ol>
+    <!-- Placeholder clues the same size as the real ones, so nothing jumps when the puzzle loads. -->
+    <ol class="clues" id="clues"><li class=""><span class="n">1</span><div><span class="k">Position and era</span><div class="v">&nbsp;</div></div></li><li class="locked"><span class="n">2</span><div><span class="k">Career</span><div class="v">Locked</div></div></li><li class="locked"><span class="n">3</span><div><span class="k">Born</span><div class="v">Locked</div></div></li><li class="locked"><span class="n">4</span><div><span class="k">Teammate</span><div class="v">Locked</div></div></li><li class="locked"><span class="n">5</span><div><span class="k">First and last team</span><div class="v">Locked</div></div></li><li class="locked"><span class="n">6</span><div><span class="k">Every team, in order</span><div class="v">Locked</div></div></li><li class="locked"><span class="n">7</span><div><span class="k">Initials</span><div class="v">Locked</div></div></li></ol>
   </section>
 
   <form class="guess" id="guess" autocomplete="off">

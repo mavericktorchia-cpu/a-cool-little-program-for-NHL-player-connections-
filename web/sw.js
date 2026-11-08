@@ -4,7 +4,6 @@
 const VERSION = "__VERSION__";
 const CACHE = "nhl-connections-" + VERSION;
 const PRECACHE = __PRECACHE__;
-const FONT_CACHE = "nhl-connections-fonts";
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(PRECACHE)).then(() => self.skipWaiting()));
@@ -13,7 +12,7 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys()
-      .then(names => Promise.all(names.filter(n => n !== CACHE && n !== FONT_CACHE).map(n => caches.delete(n))))
+      .then(names => Promise.all(names.filter(n => n !== CACHE).map(n => caches.delete(n))))
       .then(() => self.clients.claim())
   );
 });
@@ -23,16 +22,6 @@ self.addEventListener("fetch", event => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
 
-  // Google Fonts: keep a copy so the page looks right offline.
-  if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
-    event.respondWith(
-      caches.open(FONT_CACHE).then(cache => cache.match(req).then(hit => hit || fetch(req).then(res => {
-        if (res.ok || res.type === "opaque") cache.put(req, res.clone());
-        return res;
-      })))
-    );
-    return;
-  }
   if (url.origin !== location.origin) return;
 
   if (req.mode === "navigate") {

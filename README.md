@@ -200,6 +200,7 @@ web/
   common.js  # shared code: data, name search, shortest path, daily puzzles, picker
   site.css   # shared styles
   sw.js      # offline support
+  fonts/     # the three typefaces (SIL Open Font License), hosted with the site
   build.py   # builds docs/ (pages, data.js, manifest, icons)
 docs/      # the built site (GitHub Pages)
 data/nhl_rosters.json.gz

@@ -6,7 +6,7 @@ const path = require("path");
 const { chromium } = require("playwright");
 
 const DOCS = path.join(__dirname, "..", "docs");
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".webmanifest": "application/manifest+json" };
+const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".webmanifest": "application/manifest+json", ".woff2": "font/woff2", ".xml": "application/xml", ".txt": "text/plain" };
 let failures = 0;
 const check = (ok, what) => { console.log(`${ok ? "  ok  " : "  FAIL"} ${what}`); if (!ok) failures++; };
 

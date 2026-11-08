@@ -9,6 +9,16 @@
 <style>
 /* Shared look for every page: rink colors, type, page links, buttons, results and footer.
    Each page adds its own layout on top. */
+/* Fonts are hosted with the site (web/fonts). "optional" means: use them if they're ready for the
+   first paint (they're preloaded, and cached after one visit), otherwise keep the fallback rather
+   than swapping later and shifting the page. */
+@font-face { font-family: "Big Shoulders Display"; font-style: normal; font-weight: 700 900; font-display: optional; src: url(fonts/big-shoulders-display.woff2) format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: optional; src: url(fonts/barlow-400.woff2) format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: optional; src: url(fonts/barlow-500.woff2) format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: optional; src: url(fonts/barlow-600.woff2) format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: optional; src: url(fonts/ibm-plex-mono-400.woff2) format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: optional; src: url(fonts/ibm-plex-mono-500.woff2) format("woff2"); }
+
 :root {
   --ice: #eef3f7;
   --boards: #ffffff;
@@ -167,6 +177,11 @@ footer a { color: var(--blue); }
 .dist-row.today .dist-bar { background: var(--good); }
 .dist-row.today .dist-label { color: var(--ink); font-weight: 600; }
 .dist-n { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Until the page's script has filled in the game, keep everything below the heading invisible
+   (its space is still reserved) so nothing visibly jumps. A timer in <head> lifts this after 8 s
+   in case a script fails. */
+html.loading .wrap > :not(nav):not(header) { visibility: hidden; }
 .lost ul { padding-left: 20px; display: grid; gap: 6px; font-size: 18px; } .lost a { color: var(--blue); }</style>
 </head>
 <body>
