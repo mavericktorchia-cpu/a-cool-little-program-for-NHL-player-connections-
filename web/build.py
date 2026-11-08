@@ -1,13 +1,20 @@
-"""Build the web pages: self-contained HTML files with the roster data inside.
+"""Build the website in docs/ (published by GitHub Pages).
 
-    python web/build.py                  # writes docs/index.html and docs/chain.html (GitHub Pages)
-    python web/build.py --fragments DIR  # also writes body-only copies into DIR
+    python web/build.py
+
+Writes the five pages, plus the files they share:
+  data.js     every roster, as one compact script (downloaded once, then cached)
+  common.js   shared code;  site.css  shared styles
+  sw.js       offline support;  manifest.webmanifest + icons/  "add to home screen"
+Shared files are linked with ?v=<content hash>, so browsers fetch them again only when they change.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -23,7 +30,7 @@ DESCRIPTION = (
     "Pick any two NHL players from any era and see the shortest chain of teammates "
     "between them, with the team and season behind every link."
 )
-# A red puck with a white center line, as an inline SVG so the page stays one file.
+# A red puck with a white center line (the same art as web/icons/).
 FAVICON = (
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E"
     "%3Ccircle cx='32' cy='32' r='30' fill='%23c8102e'/%3E"
@@ -75,6 +82,11 @@ def head_extra(title: str, description: str, url: str) -> str:
 <meta name="twitter:title" content="{title}">
 <meta name="twitter:description" content="{description}">
 <meta name="twitter:image" content="{SITE_URL}og.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="NHL Connections">
+<meta name="theme-color" content="#eef3f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a131e" media="(prefers-color-scheme: dark)">
 """
 
 
@@ -113,32 +125,80 @@ def compact(data: dict) -> dict:
     }
 
 
+MANIFEST = {
+    "name": "NHL Player Connections",
+    "short_name": "NHL Connections",
+    "description": DESCRIPTION,
+    "start_url": "./",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#eef3f7",
+    "theme_color": "#0d1b2a",
+    "icons": [
+        {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+        {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+        {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+    ],
+    "shortcuts": [
+        {"name": "Build the Chain", "url": "chain.html"},
+        {"name": "Mystery Player", "url": "mystery.html"},
+        {"name": "Who Played Longer?", "url": "longer.html"},
+        {"name": "Name the Roster", "url": "roster.html"},
+    ],
+}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA_FILE)
-    parser.add_argument("--fragments", type=Path, help="also write each page without the <html> wrapper here")
     args = parser.parse_args()
+    web = ROOT / "web"
+    DOCS.mkdir(parents=True, exist_ok=True)
 
-    payload = json.dumps(compact(load(args.data)), separators=(",", ":"), ensure_ascii=False)
-    payload = payload.replace("</", "<\\/")  # never close the <script> tag early
+    # Shared files. The version is a hash of their contents.
+    data_js = "window.NHL_DATA=" + json.dumps(compact(load(args.data)), separators=(",", ":"), ensure_ascii=False) + ";\n"
+    common_js = (web / "common.js").read_text(encoding="utf-8")
+    site_css = (web / "site.css").read_text(encoding="utf-8")
+    version = hashlib.sha256((data_js + common_js + site_css).encode("utf-8")).hexdigest()[:10]
+    for name, text in (("data.js", data_js), ("common.js", common_js), ("site.css", site_css)):
+        (DOCS / name).write_text(text, encoding="utf-8")
+        print(f"Wrote {DOCS / name} ({len(text.encode('utf-8')) / 1024:.0f} KB)")
 
+    icons = DOCS / "icons"
+    icons.mkdir(exist_ok=True)
+    for icon in sorted((web / "icons").glob("*.png")):
+        shutil.copyfile(icon, icons / icon.name)
+    (DOCS / "manifest.webmanifest").write_text(json.dumps(MANIFEST, indent=2) + "\n", encoding="utf-8")
+
+    shared_head = f'<link rel="stylesheet" href="site.css?v={version}">\n'
+    shared_scripts = f'<script src="data.js?v={version}"></script>\n<script src="common.js?v={version}"></script>\n'
     for template, output, title, description in PAGES:
-        body = (ROOT / "web" / template).read_text(encoding="utf-8").replace("/*__DATA__*/null", payload, 1)
+        body = (web / template).read_text(encoding="utf-8")
         url = SITE_URL if output == "index.html" else SITE_URL + output
         # Title, fonts and styles belong in <head>; the rest of the template is the body.
         split = body.index('<div class="wrap">')
         head, content = body[:split], body[split:]
+        style = head.index("<style>")
+        head = head[:style] + shared_head + head[style:]  # page styles come after the shared ones
+        script = content.index("<script>")
+        content = content[:script] + shared_scripts + content[script:]
         page = (
             '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
             + head_extra(title, description, url) + head + "</head>\n<body>\n" + content + "\n</body>\n</html>\n"
         )
-        DOCS.mkdir(parents=True, exist_ok=True)
         (DOCS / output).write_text(page, encoding="utf-8")
         print(f"Wrote {DOCS / output} ({len(page) / 1024:.0f} KB)")
-        if args.fragments:
-            args.fragments.mkdir(parents=True, exist_ok=True)
-            (args.fragments / output).write_text(body, encoding="utf-8")
+
+    # Offline support: cache every page and shared file under this version.
+    precache = ["./"] + [out for _, out, _, _ in PAGES] + [
+        f"site.css?v={version}", f"common.js?v={version}", f"data.js?v={version}",
+        "manifest.webmanifest", "icons/icon-192.png", "og.png",
+    ]
+    sw = (web / "sw.js").read_text(encoding="utf-8")
+    sw = sw.replace("__VERSION__", version).replace("__PRECACHE__", json.dumps(precache))
+    (DOCS / "sw.js").write_text(sw, encoding="utf-8")
+    print(f"Wrote {DOCS / 'sw.js'} (version {version})")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 # Publishes docs/ to GitHub Pages.
-# - On every push to main: run the tests, rebuild the page, deploy.
+# - On every push to main: run the tests, rebuild the site, play every page in a
+#   browser, and deploy only if all of that passes.
 # - Every Monday (and on demand from the Actions tab): also re-download all
 #   NHL rosters first, commit the new data if anything changed, then deploy.
 name: Update data and deploy site
@@ -37,8 +38,18 @@ jobs:
         if: github.event_name != 'push'
         run: python -m nhl_connections update
 
-      - name: Build web page
+      - name: Build website
         run: python web/build.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Browser test of every page
+        run: |
+          npm install --no-save --no-package-lock playwright@1.49.1
+          npx playwright install --with-deps chromium
+          node tests/smoke.js
 
       - name: Commit refreshed data
         if: github.event_name != 'push'

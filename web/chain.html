@@ -5,83 +5,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: one column like a rink diagram. The chain you build hangs on the red center line, the target waits at the far end. */
-:root {
-  --ice: #eef3f7;
-  --boards: #ffffff;
-  --ink: #0d1b2a;
-  --muted: #566778;
-  --rule: #d3dde6;
-  --red: #c8102e;
-  --blue: #1d4f9e;
-  --blue-wash: #e3ecf8;
-  --good: #1d7a46;
-  --good-wash: #e2f3e8;
-  --display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
-    --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
-  --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; color-scheme: dark;
-}
-
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
-html, body { background: var(--ice); }
-body {
-  color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
 .wrap { max-width: 760px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 24px; }
-
-nav.site { display: flex; gap: 6px; flex-wrap: wrap; font-size: 14px; }
-nav.site a {
-  color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule); font-weight: 500;
-}
-nav.site a[aria-current="page"] { background: var(--ink); color: var(--ice); border-color: var(--ink); }
-nav.site a:hover { border-color: var(--blue); }
-
-header { display: grid; gap: 6px; }
-.eyebrow {
-  font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
-  display: flex; align-items: center; gap: 10px;
-}
-.eyebrow::before { content: ""; width: 28px; height: 3px; background: var(--blue); }
-h1 {
-  font-family: var(--display); font-weight: 900; font-size: clamp(44px, 9vw, 76px);
-  line-height: .92; margin: 0; text-transform: uppercase; text-wrap: balance;
-}
-h1 span { color: var(--red); }
 .lede { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
-
-button {
-  font: 600 15px/1 var(--body); border-radius: 8px; cursor: pointer; border: 1px solid var(--rule);
-  background: var(--boards); color: var(--ink); padding: 11px 15px;
-}
-button:hover:not(:disabled) { border-color: var(--blue); }
-button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-button:disabled { opacity: .45; cursor: default; }
-.primary {
-  background: var(--red); border-color: var(--red); color: #fff; font-family: var(--display);
-  font-weight: 800; font-size: 19px; letter-spacing: .06em; text-transform: uppercase;
-}
-.primary:hover:not(:disabled) { filter: brightness(1.08); border-color: var(--red); }
-
 /* ---------- mode bar ---------- */
-.modes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
-.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; padding: 3px; background: var(--boards); gap: 3px; }
-.seg button { border: 0; padding: 8px 14px; border-radius: 6px; background: transparent; font-weight: 600; }
-.seg button[aria-pressed="true"] { background: var(--ink); color: var(--ice); }
 .practice-opts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.record { font-family: var(--mono); font-size: 12.5px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
-.record b { color: var(--ink); font-weight: 500; }
 
 /* ---------- puzzle card ---------- */
 .matchup {
@@ -118,10 +45,6 @@ ol.chain.open::before { background: linear-gradient(var(--red) calc(100% - 96px)
 .link { display: grid; grid-template-columns: 46px 1fr; gap: 14px; padding-block: 9px; }
 .link .via { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 14px; color: var(--muted); }
 .link.gap .via { font-family: var(--mono); font-size: 13px; letter-spacing: .04em; }
-.chip {
-  font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--blue); background: var(--blue-wash);
-  border-radius: 5px; padding: 3px 8px; white-space: nowrap;
-}
 
 /* ---------- guess box ---------- */
 .guess { background: var(--boards); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: grid; gap: 12px; }
@@ -139,17 +62,8 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
   background: var(--boards); border: 1px solid var(--rule); border-radius: 8px; box-shadow: 0 12px 28px rgb(0 0 0 / .18);
   max-height: 300px; overflow-y: auto;
 }
-.listbox li { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: grid; gap: 1px; }
-.listbox li[aria-selected="true"], .listbox li:hover { background: var(--blue-wash); }
-.listbox .n { font-weight: 600; }
-.listbox .m { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-.listbox .empty { color: var(--muted); cursor: default; }
 .tools { display: flex; gap: 8px; flex-wrap: wrap; }
 .tools button { padding: 9px 13px; font-size: 14px; font-weight: 500; }
-.feedback { margin: 0; font-weight: 600; min-height: 1.5em; }
-.feedback.bad { color: var(--red); }
-.feedback.ok { color: var(--good); }
-.feedback.hint { color: var(--blue); }
 .misses { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
 .misses s { font-family: var(--mono); font-size: 12.5px; background: var(--ice); border: 1px solid var(--rule); border-radius: 5px; padding: 2px 7px; }
 
@@ -159,23 +73,10 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
 .verdict { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .big { font-family: var(--display); font-weight: 900; font-size: 84px; line-height: .8; color: var(--red); font-variant-numeric: tabular-nums; }
 .result.perfect .big { color: var(--good); }
-.verdict h2 { font-family: var(--display); font-weight: 800; font-size: 30px; text-transform: uppercase; margin: 0; line-height: 1; }
 .verdict p { margin: 4px 0 0; color: var(--muted); }
 .scoreline { display: flex; gap: 8px; flex-wrap: wrap; }
 .scoreline span { font-family: var(--mono); font-size: 13px; background: var(--ice); border-radius: 6px; padding: 5px 10px; }
-.result h3 { font-size: 14px; margin: 4px 0 0; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
 .best-path { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
-.share-box {
-  font-family: var(--mono); font-size: 13px; white-space: pre-wrap; background: var(--ice); border-radius: 8px; padding: 10px 12px; margin: 0;
-  user-select: all; overflow-wrap: anywhere;
-}
-
-details.how { background: var(--boards); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; }
-details.how summary { cursor: pointer; font-weight: 600; }
-details.how ul { margin: 10px 0 2px; padding-left: 20px; display: grid; gap: 4px; }
-
-footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; display: grid; gap: 6px; }
-footer a { color: var(--blue); }
 @media (prefers-reduced-motion: no-preference) {
   .player.new, .link.new { animation: drop .35s ease-out both; }
   @keyframes drop { from { transform: translateY(6px); opacity: .4; } to { transform: none; opacity: 1; } }
@@ -187,10 +88,10 @@ footer a { color: var(--blue); }
 <div class="wrap">
   <nav class="site" aria-label="Pages">
     <a href="index.html">Find a connection</a>
-    <a href="chain.html" aria-current="page">Build the Chain</a>
-    <a href="mystery.html">Mystery Player</a>
-    <a href="longer.html">Who Played Longer?</a>
-    <a href="roster.html">Name the Roster</a>
+    <a href="chain.html" data-game="chain" aria-current="page">Build the Chain</a>
+    <a href="mystery.html" data-game="mystery">Mystery Player</a>
+    <a href="longer.html" data-game="longer">Who Played Longer?</a>
+    <a href="roster.html" data-game="roster">Name the Roster</a>
   </nav>
 
   <header>
@@ -224,8 +125,8 @@ footer a { color: var(--blue); }
     <label for="g">Who played with <span id="last-name"></span>?</label>
     <div class="row">
       <div class="field">
-        <input id="g" type="text" role="combobox" aria-expanded="false" aria-controls="g-list" placeholder="Type a player's name">
-        <ul class="listbox" id="g-list" role="listbox" hidden></ul>
+        <input id="g" type="text" placeholder="Type a player's name">
+        <ul class="listbox" id="g-list" hidden></ul>
       </div>
       <button type="submit" class="primary" id="add">Add</button>
     </div>
@@ -240,7 +141,7 @@ footer a { color: var(--blue); }
 
   <section class="result" id="result" hidden aria-live="polite"></section>
 
-  <details class="how">
+  <details class="how" id="how">
     <summary>How to play</summary>
     <ul>
       <li>Type a player who was on the same team, in the same season, as the last player in your chain.</li>
@@ -258,92 +159,18 @@ footer a { color: var(--blue); }
 </div>
 
 <script>
-const DATA = /*__DATA__*/null;
-const SITE = "https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/chain.html";
+const SITE = SITE_ROOT + "chain.html";
 const FIRST_DAY = Date.UTC(2026, 10, 7); // puzzle #1
 
-/* ---------- data ---------- */
-const P = DATA.p.map(([id, name, pos]) => ({ id, name, pos, stints: [] }));
-const byId = new Map(P.map((p, i) => [p.id, i]));
-const keys = Object.keys(DATA.r).sort((x, y) => x.split("-")[1] - y.split("-")[1] || (x < y ? -1 : 1));
-const R = keys.map(k => DATA.r[k]);
-keys.forEach((k, s) => R[s].forEach(i => P[i].stints.push(s)));
-const norm = s => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-P.forEach(p => { p.key = norm(p.name); p.words = p.key.split(" "); });
-
-const seasonLabel = s => `${s.slice(0, 4)}–${s.slice(6)}`;
-const stintLabel = s => { const [t, y] = keys[s].split("-"); return `${t} ${seasonLabel(y)}`; };
-const teamName = t => (DATA.t && DATA.t[t]) || t;
-const posName = { C: "C", L: "LW", R: "RW", D: "D", G: "G" };
-function career(p) {
-  if (!p.stints.length) return "no roster data";
-  const first = keys[p.stints[0]].split("-")[1].slice(0, 4);
-  const last = keys[p.stints[p.stints.length - 1]].split("-")[1].slice(4);
-  const teams = [...new Set(p.stints.map(s => keys[s].split("-")[0]))];
-  return `${first}–${last} · ${teams.join("/")}`;
-}
-const describe = p => `${posName[p.pos] || p.pos || "?"} · ${career(p)}`;
-const shared = (a, b) => { const mine = new Set(P[a].stints); return P[b].stints.filter(s => mine.has(s)); };
-
-function search(q, limit = 8) {
-  const words = norm(q).split(" ").filter(Boolean);
-  if (!words.length) return [];
-  const hits = [];
-  for (let i = 0; i < P.length; i++) {
-    const p = P[i];
-    if (words.every(w => p.words.some(pw => pw.startsWith(w)))) {
-      const exact = p.key === words.join(" ") ? 1000 : 0;
-      hits.push([exact + p.stints.length, i]);
-    }
-  }
-  return hits.sort((x, y) => y[0] - x[0]).slice(0, limit).map(h => h[1]);
-}
-
-function shortestPath(a, b, avoid = new Set()) {
-  if (a === b) return [a];
-  const fw = new Map([[a, -1]]), bw = new Map([[b, -1]]);
-  const seenF = new Set(), seenB = new Set();
-  let front = [a], back = [b];
-  const expand = (frontier, tree, seen) => {
-    const next = [];
-    for (const p of frontier) for (const s of P[p].stints) {
-      if (seen.has(s)) continue;
-      seen.add(s);
-      for (const o of R[s]) if (!tree.has(o) && !avoid.has(o)) { tree.set(o, p); next.push(o); }
-    }
-    return next;
-  };
-  while (front.length && back.length) {
-    let meet;
-    if (front.length <= back.length) { front = expand(front, fw, seenF); meet = front.find(p => bw.has(p)); }
-    else { back = expand(back, bw, seenB); meet = back.find(p => fw.has(p)); }
-    if (meet !== undefined) {
-      const chain = [meet];
-      for (let n = fw.get(meet); n !== -1; n = fw.get(n)) chain.unshift(n);
-      for (let n = bw.get(meet); n !== -1; n = bw.get(n)) chain.push(n);
-      return chain;
-    }
-  }
-  return null;
-}
-
 /* ---------- picking puzzles ---------- */
-// Candidates are counted by seasons on rosters before 2024-25 only, so the pools (and each day's
-// puzzle) stay the same when new rosters arrive. Long careers mean recognizable names; Hard mode
-// digs a little deeper.
-const CUTOFF = 20242025;
-const seasonsBefore = P.map(p => p.stints.filter(s => +keys[s].split("-")[1] < CUTOFF).length);
-const poolOf = min => P.map((p, i) => i).filter(i => seasonsBefore[i] >= min);
-const POOLS = { famous: poolOf(13), deep: poolOf(8) };
+// Candidates come from long careers (recognizable names); Hard mode digs deeper. Only seasons
+// before 2024-25 count, so weekly roster updates never change a day's pair.
+// This game counts roster stints (a mid-season trade counts twice) when choosing players.
+// Keep it that way: changing the count would change every future daily pair.
+const stintsBefore = P.map(p => p.stints.filter(s => +season(s) < CUTOFF).length);
+const chainPool = min => P.map((p, i) => i).filter(i => stintsBefore[i] >= min);
+const POOLS = { famous: chainPool(13), deep: chainPool(8) };
 
-function mulberry32(seed) {
-  return () => {
-    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 const LEVELS = { easy: [2, 2], medium: [3, 3], hard: [4, 6], daily: [3, 4] };
 function pickPair(rand, level) {
   const [lo, hi] = LEVELS[level];
@@ -361,14 +188,7 @@ function pickPair(rand, level) {
   return fallback;
 }
 
-/* ---------- dates & saved progress ---------- */
-const today = new Date();
-const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-const puzzleNo = Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - FIRST_DAY) / 86400000) + 1;
-const store = {
-  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
-};
+const puzzleNo = puzzleNumber(FIRST_DAY);
 
 /* ---------- game state ---------- */
 let mode = "daily", level = "medium";
@@ -391,7 +211,7 @@ function saveDaily() {
 }
 function startDaily() {
   mode = "daily";
-  const pair = pickPair(mulberry32(+dateKey.replace(/-/g, "")), "daily");
+  const pair = pickPair(mulberry32(dateSeed), "daily");
   newGame(pair);
   const saved = store.get("chain-daily-" + dateKey);
   if (saved && saved.a === P[pair.a].id && saved.b === P[pair.b].id) {
@@ -413,7 +233,6 @@ function startPractice() {
 const last = () => G.chain[G.chain.length - 1];
 const fb = $("feedback");
 function say(msg, kind = "") { fb.textContent = msg; fb.className = "feedback " + kind; }
-function $(id) { return document.getElementById(id); }
 
 function guess(i) {
   if (G.done) return;
@@ -472,40 +291,16 @@ $("giveup").addEventListener("click", () => {
 });
 
 /* ---------- picker ---------- */
-(function picker() {
-  const input = $("g"), list = $("g-list");
-  let options = [], active = 0;
-  const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); };
-  const render = () => {
-    list.innerHTML = "";
-    if (!options.length) list.innerHTML = '<li class="empty">No player by that name. Check the spelling, or try just a last name.</li>';
-    options.forEach((i, n) => {
-      const li = document.createElement("li");
-      li.setAttribute("role", "option"); li.setAttribute("aria-selected", n === active ? "true" : "false");
-      li.innerHTML = '<span class="n"></span><span class="m"></span>';
-      li.querySelector(".n").textContent = P[i].name;
-      li.querySelector(".m").textContent = describe(P[i]);
-      li.addEventListener("mousedown", e => { e.preventDefault(); pick(i); });
-      list.appendChild(li);
-    });
-    list.hidden = false; input.setAttribute("aria-expanded", "true");
-  };
-  const pick = i => { input.value = ""; close(); guess(i); input.focus(); };
-  input.addEventListener("input", () => { options = search(input.value); active = 0; input.value.trim() ? render() : close(); });
-  input.addEventListener("keydown", e => {
-    if (list.hidden) return;
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault(); active = (active + (e.key === "ArrowDown" ? 1 : -1) + options.length) % Math.max(options.length, 1); render();
-    } else if (e.key === "Escape") close();
-  });
-  input.addEventListener("blur", () => setTimeout(close, 100));
-  $("guess").addEventListener("submit", e => {
-    e.preventDefault();
-    if (!input.value.trim()) { say("Type a player's name, then pick from the list.", "bad"); return; }
-    if (options.length) pick(options[list.hidden ? 0 : active]);
-    else say("No player by that name. Check the spelling, or try just a last name.", "bad");
-  });
-})();
+const picker = makePicker($("g"), $("g-list"), {
+  onPick: i => { $("g").value = ""; guess(i); if (!G.done) $("g").focus(); },
+});
+$("guess").addEventListener("submit", e => {
+  e.preventDefault();
+  if (!picker.hasText()) { say("Type a player's name, then pick from the list.", "bad"); return; }
+  const i = picker.current();
+  if (i === null) { say("No player by that name. Check the spelling, or try just a last name.", "bad"); return; }
+  picker.close(); $("g").value = ""; guess(i); if (!G.done) $("g").focus();
+});
 
 /* ---------- rendering ---------- */
 function plate(i, cls, num) {
@@ -621,7 +416,8 @@ function renderResult() {
     <div class="best" hidden><h3>A shortest chain</h3><p class="best-path"></p></div>
     <div><h3>Share your result</h3></div>
     <pre class="share-box" id="share-text"></pre>
-    <div class="tools"><button type="button" class="primary" id="copy">Copy result</button><button type="button" id="next"></button></div>`;
+    <div class="tools"><button type="button" class="primary" id="copy">Copy result</button><button type="button" id="next"></button></div>
+    <p class="countdown"></p>`;
   box.querySelector("h2").textContent = title;
   box.querySelector(".verdict p").textContent = sub;
   if (!perfect) {
@@ -630,15 +426,11 @@ function renderResult() {
     box.querySelector(".best-path").textContent = best.map(i => P[i].name).join(" → ");
   }
   box.querySelector("#share-text").textContent = shareText();
-  box.querySelector("#copy").addEventListener("click", async e => {
-    const btn = e.currentTarget;
-    try { await navigator.clipboard.writeText(shareText()); btn.textContent = "Copied"; }
-    catch (err) {
-      const sel = window.getSelection(), r = document.createRange();
-      r.selectNodeContents(box.querySelector("#share-text")); sel.removeAllRanges(); sel.addRange(r);
-      btn.textContent = "Selected. Press Ctrl+C to copy";
-    }
-  });
+  const cd = box.querySelector(".countdown");
+  if (mode === "daily") startCountdown(cd); else cd.remove();
+  const copyBtn = box.querySelector("#copy");
+  copyBtn.dataset.label = "Copy result";
+  copyBtn.addEventListener("click", () => copyText(copyBtn, shareText(), box.querySelector("#share-text")));
   const next = box.querySelector("#next");
   next.textContent = mode === "daily" ? "Play a practice chain" : "New chain";
   next.addEventListener("click", startPractice);
@@ -654,6 +446,6 @@ document.querySelectorAll("[data-level]").forEach(b => b.addEventListener("click
   startPractice();
 }));
 
-$("stats").textContent = `${keys.length.toLocaleString()} team-season rosters · ${P.length.toLocaleString()} players · data updated ${DATA.built}`;
+if (firstVisit("chain")) { $("how").open = true; markSeen("chain"); }
 location.hash === "#practice" ? startPractice() : startDaily();
 </script>

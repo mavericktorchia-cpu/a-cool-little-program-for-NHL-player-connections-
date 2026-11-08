@@ -8,47 +8,52 @@ behind every link.
 
 ```
 $ python -m nhl_connections path "Connor Bedard" "Maurice Richard"
-Connor Bedard -> Maurice Richard: 6 degrees of separation
+Connor Bedard -> Maurice Richard: 5 degrees of separation
 
   Connor Bedard
-    | teammates on CHI 2023-24, CHI 2024-25
-  Nick Foligno
-    | teammates on OTT 2007-08, OTT 2008-09
-  Luke Richardson
-    | teammates on TOR 1987-88
-  Mike Allison
-    | teammates on NYR 1980-81, NYR 1981-82
-  Carol Vadnais
-    | teammates on MTL 1966-67, MTL 1967-68
-  Jean Beliveau
-    | teammates on MTL 1950-51, MTL 1952-53, MTL 1953-54 (+6 more)
+    | teammates on CHI 2023-24
+  Corey Perry
+    | teammates on ANA 2007-08
+  Mathieu Schneider
+    | teammates on MTL 1987-88
+  Larry Robinson
+    | teammates on MTL 1972-73, MTL 1973-74, MTL 1974-75
+  Henri Richard
+    | teammates on MTL 1955-56, MTL 1956-57, MTL 1957-58 (+2 more)
   Maurice Richard
 ```
 
 It comes with every NHL roster from 1917-18 to today (about 1,800 team-seasons
-and 8,700+ players) in a 250 KB file, so it runs offline and answers instantly.
+and 8,800+ players) in a 230 KB file, so it runs offline and answers instantly.
 
 ## Web version
 
 `docs/index.html` is the same thing as a web page: type two names, pick from
 the suggestions, and see the chain. Click **Route around** on any player in
-the middle to find a different chain that skips them, or hit **Random pair**.
-It's one self-contained file (all the data is inside), so you can just open it
-in a browser.
+the middle to find a different chain that skips them, hit **Random pair**, or
+**Copy link** to share a connection.
+
+The site is also an installable app. On a phone, use *Add to Home Screen*
+(Safari) or *Install app* (Chrome). After one visit every page works offline.
 
 **Live site:** https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/
 
 The GitHub Action in `.github/workflows/pages.yml` publishes the site:
 
-* every push to `main` runs the tests, rebuilds the page and deploys it;
+* every push to `main` runs the tests, rebuilds the site, plays every page in a
+  real browser (`tests/smoke.js`), and deploys only if everything passes;
 * every Monday it also re-downloads all NHL rosters, commits the new data if
   anything changed, and redeploys. You can trigger this from the *Actions* tab
   too (*Update data and deploy site* → *Run workflow*).
 
 One-time setup: in *Settings → Pages*, set *Source* to **GitHub Actions**.
 
-To rebuild by hand after `update`: `python web/build.py`. The link-preview
-image `docs/og.png` comes from `web/og-card.html` (`node web/make-og.js`).
+To rebuild by hand after `update`: `python web/build.py`. To run the browser
+test: `npm i playwright && npx playwright install chromium && node tests/smoke.js`.
+The link-preview image and app icons come from `node web/make-images.js`.
+
+The daily games show a ✓ on their page link once today's puzzle is done, and
+a countdown to the next one. Progress and streaks are saved in your browser.
 
 ## Game: Build the Chain
 
@@ -186,10 +191,17 @@ nhl_connections/
   data.py    # downloads and saves / loads the roster file
   graph.py   # teammate graph, name lookup, shortest path search
   cli.py     # command-line interface
-web/       # page templates (template.html, chain.html, mystery.html, longer.html, roster.html) + build script
-docs/      # built pages (GitHub Pages)
+web/
+  template.html, chain.html, mystery.html, longer.html, roster.html   # one per page
+  common.js  # shared code: data, name search, shortest path, daily puzzles, picker
+  site.css   # shared styles
+  sw.js      # offline support
+  build.py   # builds docs/ (pages, data.js, manifest, icons)
+docs/      # the built site (GitHub Pages)
 data/nhl_rosters.json.gz
-tests/       # offline unit tests:  python -m unittest
+tests/
+  test_graph.py  # unit tests:     python -m unittest
+  smoke.js       # browser test:   node tests/smoke.js
 ```
 
 ## License

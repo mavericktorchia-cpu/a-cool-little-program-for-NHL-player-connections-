@@ -5,61 +5,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: one centered column read top to bottom like a rink diagram; the chain hangs on a red center line. */
-:root {
-  --ice: #eef3f7;
-  --boards: #ffffff;
-  --ink: #0d1b2a;
-  --muted: #566778;
-  --rule: #d3dde6;
-  --red: #c8102e;
-  --blue: #1d4f9e;
-  --blue-wash: #e3ecf8;
-  --display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
-    --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
-  --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; color-scheme: dark;
-}
-
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
-html, body { background: var(--ice); }
-body {
-  color: var(--ink);
-  font-family: var(--body);
-  font-size: 16px;
-  line-height: 1.5;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
 .wrap { max-width: 760px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 28px; }
-
-nav.site { display: flex; gap: 6px; flex-wrap: wrap; font-size: 14px; }
-nav.site a {
-  color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule); font-weight: 500;
-}
-nav.site a[aria-current="page"] { background: var(--ink); color: var(--ice); border-color: var(--ink); }
-nav.site a:hover { border-color: var(--blue); }
-
-header { display: grid; gap: 6px; }
-.eyebrow {
-  font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
-  display: flex; align-items: center; gap: 10px;
-}
-.eyebrow::before { content: ""; width: 28px; height: 3px; background: var(--blue); }
-h1 {
-  font-family: var(--display); font-weight: 900; font-size: clamp(44px, 9vw, 76px);
-  line-height: .92; margin: 0; letter-spacing: .005em; text-transform: uppercase; text-wrap: balance;
-}
-h1 span { color: var(--red); }
 .lede { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
 
 /* ---------- search form ---------- */
@@ -82,24 +28,9 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
   background: var(--boards); border: 1px solid var(--rule); border-radius: 8px; box-shadow: 0 12px 28px rgb(0 0 0 / .18);
   max-height: 320px; overflow-y: auto;
 }
-.listbox li { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: grid; gap: 1px; }
-.listbox li[aria-selected="true"], .listbox li:hover { background: var(--blue-wash); }
-.listbox .n { font-weight: 600; }
-.listbox .m { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-.listbox .empty { color: var(--muted); cursor: default; }
-
-button {
-  font: 600 15px/1 var(--body); border-radius: 8px; cursor: pointer; border: 1px solid var(--rule);
-  background: var(--boards); color: var(--ink); padding: 12px 16px;
-}
 button:hover { border-color: var(--blue); }
-button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .swap { width: 44px; height: 46px; padding: 0; font-size: 20px; margin-bottom: 1.6em; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.primary {
-  background: var(--red); border-color: var(--red); color: #fff; font-family: var(--display);
-  font-weight: 800; font-size: 20px; letter-spacing: .06em; text-transform: uppercase; padding: 12px 22px;
-}
 .primary:hover { filter: brightness(1.08); border-color: var(--red); }
 .error { color: var(--red); font-weight: 600; margin: 0; }
 
@@ -115,6 +46,7 @@ button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 }
 .verdict p { margin: 0; font-size: 18px; max-width: 46ch; }
 .verdict strong { font-weight: 600; }
+.copy-link { margin-left: auto; padding: 8px 12px; font-size: 13px; font-weight: 500; }
 .verdict .unit { font-family: var(--display); font-weight: 800; font-size: 26px; text-transform: uppercase; letter-spacing: .03em; display: block; line-height: 1; margin-bottom: 4px; }
 
 ol.chain { list-style: none; margin: 0; padding: 0; display: grid; position: relative; }
@@ -138,14 +70,7 @@ ol.chain::before { /* the red center line */
 .plate button { padding: 8px 12px; font-size: 13px; font-weight: 500; }
 .link { display: grid; grid-template-columns: 46px 1fr; gap: 14px; padding-block: 10px; }
 .link .via { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 14px; color: var(--muted); }
-.chip {
-  font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--blue); background: var(--blue-wash);
-  border-radius: 5px; padding: 3px 8px; white-space: nowrap;
-}
 .empty-state { color: var(--muted); }
-
-footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; display: grid; gap: 6px; }
-footer a { color: var(--blue); }
 @media (prefers-reduced-motion: no-preference) {
   .player, .link { animation: drop .35s ease-out both; animation-delay: calc(var(--i, 0) * 45ms); }
   @keyframes drop { from { transform: translateY(6px); opacity: .4; } to { transform: none; opacity: 1; } }
@@ -155,10 +80,10 @@ footer a { color: var(--blue); }
 <div class="wrap">
   <nav class="site" aria-label="Pages">
     <a href="index.html" aria-current="page">Find a connection</a>
-    <a href="chain.html">Build the Chain</a>
-    <a href="mystery.html">Mystery Player</a>
-    <a href="longer.html">Who Played Longer?</a>
-    <a href="roster.html">Name the Roster</a>
+    <a href="chain.html" data-game="chain">Build the Chain</a>
+    <a href="mystery.html" data-game="mystery">Mystery Player</a>
+    <a href="longer.html" data-game="longer">Who Played Longer?</a>
+    <a href="roster.html" data-game="roster">Name the Roster</a>
   </nav>
 
   <header>
@@ -171,15 +96,15 @@ footer a { color: var(--blue); }
     <div class="pickers">
       <div class="field">
         <label for="a">From</label>
-        <input id="a" type="text" role="combobox" aria-expanded="false" aria-controls="a-list" placeholder="e.g. Connor Bedard">
-        <ul class="listbox" id="a-list" role="listbox" hidden></ul>
+        <input id="a" type="text" placeholder="e.g. Connor Bedard">
+        <ul class="listbox" id="a-list" hidden></ul>
         <div class="picked" id="a-picked"></div>
       </div>
       <button type="button" class="swap" id="swap" aria-label="Swap players" title="Swap">⇄</button>
       <div class="field">
         <label for="b">To</label>
-        <input id="b" type="text" role="combobox" aria-expanded="false" aria-controls="b-list" placeholder="e.g. Maurice Richard">
-        <ul class="listbox" id="b-list" role="listbox" hidden></ul>
+        <input id="b" type="text" placeholder="e.g. Maurice Richard">
+        <ul class="listbox" id="b-list" hidden></ul>
         <div class="picked" id="b-picked"></div>
       </div>
     </div>
@@ -200,126 +125,23 @@ footer a { color: var(--blue); }
 </div>
 
 <script>
-const DATA = /*__DATA__*/null;
-
-/* ---------- unpack ---------- */
-// DATA.p = [[id, name, pos], ...]; DATA.r = {"TEAM-SEASON": [playerIndex, ...]}; DATA.t = {TRI: "Full Name"}
-const P = DATA.p.map(([id, name, pos]) => ({ id, name, pos, stints: [] }));
-const byId = new Map(P.map((p, i) => [p.id, i]));
-const keys = Object.keys(DATA.r).sort((x, y) => x.split("-")[1] - y.split("-")[1] || (x < y ? -1 : 1));
-const R = keys.map(k => DATA.r[k]);
-keys.forEach((k, s) => R[s].forEach(i => P[i].stints.push(s)));
-
-const norm = s => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-P.forEach(p => { p.key = norm(p.name); p.words = p.key.split(" "); });
-
-const seasonLabel = s => `${s.slice(0, 4)}–${s.slice(6)}`;
-const stintLabel = s => { const [t, y] = keys[s].split("-"); return `${t} ${seasonLabel(y)}`; };
-const teamName = t => (DATA.t && DATA.t[t]) || t;
-function career(p) {
-  if (!p.stints.length) return "no roster data";
-  const first = keys[p.stints[0]].split("-")[1].slice(0, 4);
-  const last = keys[p.stints[p.stints.length - 1]].split("-")[1].slice(4);
-  const teams = [...new Set(p.stints.map(s => keys[s].split("-")[0]))];
-  return `${first}–${last} · ${teams.join("/")}`;
-}
-const posName = { C: "C", L: "LW", R: "RW", D: "D", G: "G" };
-const describe = p => `${posName[p.pos] || p.pos || "?"} · ${career(p)}`;
-
-/* ---------- search ---------- */
-function search(q, limit = 8) {
-  const words = norm(q).split(" ").filter(Boolean);
-  if (!words.length) return [];
-  const hits = [];
-  for (let i = 0; i < P.length; i++) {
-    const p = P[i];
-    if (words.every(w => p.words.some(pw => pw.startsWith(w)))) {
-      const exact = p.key === words.join(" ") ? 1000 : 0;
-      const lastHit = p.words[p.words.length - 1].startsWith(words[words.length - 1]) ? 50 : 0;
-      hits.push([exact + lastHit + p.stints.length, i]);
-    }
-  }
-  return hits.sort((x, y) => y[0] - x[0]).slice(0, limit).map(h => h[1]);
-}
-
-/* ---------- bidirectional BFS ---------- */
-function shortestPath(a, b, avoid) {
-  if (a === b) return [a];
-  const fw = new Map([[a, -1]]), bw = new Map([[b, -1]]);
-  const seenF = new Set(), seenB = new Set();
-  let front = [a], back = [b];
-  const expand = (frontier, tree, seen) => {
-    const next = [];
-    for (const p of frontier) for (const s of P[p].stints) {
-      if (seen.has(s)) continue;
-      seen.add(s);
-      for (const o of R[s]) if (!tree.has(o) && !avoid.has(o)) { tree.set(o, p); next.push(o); }
-    }
-    return next;
-  };
-  while (front.length && back.length) {
-    let meet;
-    if (front.length <= back.length) { front = expand(front, fw, seenF); meet = front.find(p => bw.has(p)); }
-    else { back = expand(back, bw, seenB); meet = back.find(p => fw.has(p)); }
-    if (meet !== undefined) {
-      const chain = [meet];
-      for (let n = fw.get(meet); n !== -1; n = fw.get(n)) chain.unshift(n);
-      for (let n = bw.get(meet); n !== -1; n = bw.get(n)) chain.push(n);
-      return chain;
-    }
-  }
-  return null;
-}
-const shared = (a, b) => { const mine = new Set(P[a].stints); return P[b].stints.filter(s => mine.has(s)); };
-
 /* ---------- pickers ---------- */
 const state = { a: null, b: null, avoid: new Set() };
 function picker(which) {
-  const input = document.getElementById(which), list = document.getElementById(which + "-list"),
-        picked = document.getElementById(which + "-picked");
-  let options = [], active = 0;
-  const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); };
-  const render = () => {
-    list.innerHTML = "";
-    if (!options.length) {
-      list.innerHTML = '<li class="empty">No player by that name. Check the spelling, or try just a last name.</li>';
-    }
-    options.forEach((i, n) => {
-      const li = document.createElement("li");
-      li.setAttribute("role", "option");
-      li.setAttribute("aria-selected", n === active ? "true" : "false");
-      li.innerHTML = `<span class="n"></span><span class="m"></span>`;
-      li.querySelector(".n").textContent = P[i].name;
-      li.querySelector(".m").textContent = describe(P[i]);
-      li.addEventListener("mousedown", e => { e.preventDefault(); choose(i); });
-      list.appendChild(li);
-    });
-    list.hidden = false; input.setAttribute("aria-expanded", "true");
-  };
+  const input = $(which), picked = $(which + "-picked");
   const choose = (i, silent) => {
-    state[which] = i; input.value = P[i].name; picked.textContent = describe(P[i]); close();
+    state[which] = i; input.value = P[i].name; picked.textContent = describe(P[i]);
     if (!silent) hideError();
   };
-  input.addEventListener("input", () => {
-    state[which] = null; picked.textContent = "";
-    options = search(input.value); active = 0;
-    input.value.trim() ? render() : close();
+  const ui = makePicker(input, $(which + "-list"), {
+    onPick: i => choose(i),
+    onType: () => { state[which] = null; picked.textContent = ""; },
   });
-  input.addEventListener("keydown", e => {
-    if (list.hidden) return;
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault();
-      active = (active + (e.key === "ArrowDown" ? 1 : -1) + options.length) % Math.max(options.length, 1); render();
-    } else if (e.key === "Enter" && options.length) { e.preventDefault(); choose(options[active]); }
-    else if (e.key === "Escape") close();
-  });
-  input.addEventListener("blur", () => setTimeout(close, 100));
-  return { choose, clear: () => { state[which] = null; input.value = ""; picked.textContent = ""; } };
+  return { choose, clear: () => { state[which] = null; input.value = ""; picked.textContent = ""; ui.close(); } };
 }
 const pickA = picker("a"), pickB = picker("b");
 
 /* ---------- rendering ---------- */
-const $ = id => document.getElementById(id);
 const err = $("error");
 const showError = m => { err.textContent = m; err.hidden = false; };
 const hideError = () => { err.hidden = true; };
@@ -328,10 +150,12 @@ function renderAvoid() {
   const box = $("avoiding");
   box.innerHTML = "";
   if (!state.avoid.size) { box.hidden = true; return; }
+  box.hidden = false;
   box.append("Routing around:");
   for (const i of state.avoid) {
     const b = document.createElement("button");
     b.type = "button"; b.textContent = P[i].name + " ✕"; b.title = "Allow this player again";
+    b.setAttribute("aria-label", `Allow ${P[i].name} again`);
     b.addEventListener("click", () => { state.avoid.delete(i); connect(); });
     box.appendChild(b);
   }
@@ -350,10 +174,11 @@ function connect() {
   const out = $("result");
   out.innerHTML = "";
   if (!chain) {
-    out.innerHTML = `<p class="empty-state"></p>`;
-    out.firstChild.textContent = state.avoid.size
+    const p = document.createElement("p"); p.className = "empty-state";
+    p.textContent = state.avoid.size
       ? `No connection left once those players are skipped. Remove one from "Routing around" to see a route again.`
       : `${P[a].name} and ${P[b].name} aren't connected through NHL teammates.`;
+    out.appendChild(p);
     return;
   }
   const hops = chain.length - 1;
@@ -363,8 +188,16 @@ function connect() {
   const sentence = document.createElement("span");
   sentence.textContent = hops === 0 ? "That's the same player."
     : hops === 1 ? `${P[a].name} and ${P[b].name} were teammates.`
-    : `${P[a].name} reaches ${P[b].name} through ${hops - 1} ${hops - 1 === 1 ? "teammate" : "teammates"} in between.`;
+    : `${P[a].name} reaches ${P[b].name} through ${plural(hops - 1, "teammate", "teammates")} in between.`;
   verdict.querySelector("p").appendChild(sentence);
+  if (hops > 0) {
+    const copy = document.createElement("button");
+    copy.type = "button"; copy.className = "copy-link"; copy.textContent = copy.dataset.label = "Copy link";
+    copy.title = "Copy a link to this connection";
+    const text = `${P[a].name} → ${P[b].name}: ${plural(hops, "degree", "degrees")} of separation\n${chain.map(i => P[i].name).join(" → ")}\n${SITE_ROOT}#${P[a].id}-${P[b].id}`;
+    copy.addEventListener("click", () => copyText(copy, text));
+    verdict.appendChild(copy);
+  }
   out.appendChild(verdict);
 
   const ol = document.createElement("ol");
@@ -378,23 +211,24 @@ function connect() {
       via.append("Teammates on");
       st.slice(0, 4).forEach(s => {
         const c = document.createElement("span"); c.className = "chip";
-        c.textContent = stintLabel(s); c.title = teamName(keys[s].split("-")[0]);
+        c.textContent = stintLabel(s); c.title = teamName(team(s));
         via.appendChild(c);
       });
-      if (st.length > 4) via.append(`+${st.length - 4} more ${st.length - 4 === 1 ? "season" : "seasons"}`);
+      if (st.length > 4) via.append(`+${plural(st.length - 4, "more season", "more seasons")}`);
       li.appendChild(via); ol.appendChild(li);
     }
     const p = P[pi];
     const li = document.createElement("li");
     const end = n === 0 || n === chain.length - 1;
     li.className = "player" + (end ? " end" : ""); li.style.setProperty("--i", n * 2);
-    li.innerHTML = `<div class="puck">${n}</div><div class="plate"><div class="who"><div class="name"></div><div class="meta"></div></div></div>`;
+    li.innerHTML = `<div class="puck" aria-hidden="true">${n}</div><div class="plate"><div class="who"><div class="name"></div><div class="meta"></div></div></div>`;
     li.querySelector(".name").textContent = p.name;
     li.querySelector(".meta").textContent = describe(p);
     if (!end) {
       const btn = document.createElement("button");
       btn.type = "button"; btn.textContent = "Route around";
       btn.title = `Find a chain that doesn't go through ${p.name}`;
+      btn.setAttribute("aria-label", `Find a chain that doesn't go through ${p.name}`);
       btn.addEventListener("click", () => { state.avoid.add(pi); connect(); });
       li.querySelector(".plate").appendChild(btn);
     }
@@ -418,8 +252,6 @@ $("random").addEventListener("click", () => {
   pickA.choose(x); pickB.choose(y); state.avoid.clear(); connect();
 });
 
-$("stats").textContent = `${keys.length.toLocaleString()} team-season rosters · ${P.length.toLocaleString()} players · data updated ${DATA.built}`;
-
 function fromHash() {
   const m = /^#(\d+)-(\d+)$/.exec(location.hash);
   if (m && byId.has(+m[1]) && byId.has(+m[2])) {
@@ -430,7 +262,7 @@ function fromHash() {
 window.addEventListener("hashchange", fromHash);
 if (!fromHash()) {
   // Open on an example so the page shows what it does.
-  const ex = (name, pos) => P.findIndex(p => p.name === name && (!pos || p.pos === pos));
+  const ex = name => P.findIndex(p => p.name === name);
   const a = ex("Connor Bedard"), b = ex("Maurice Richard");
   if (a >= 0 && b >= 0) { pickA.choose(a, true); pickB.choose(b, true); connect(); }
 }

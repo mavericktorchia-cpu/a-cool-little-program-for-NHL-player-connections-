@@ -5,82 +5,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: one column. A scouting card of numbered clues fills in from the top; guesses stack below it with how close each one was. */
-:root {
-  --ice: #eef3f7;
-  --boards: #ffffff;
-  --ink: #0d1b2a;
-  --muted: #566778;
-  --rule: #d3dde6;
-  --red: #c8102e;
-  --blue: #1d4f9e;
-  --blue-wash: #e3ecf8;
-  --good: #1d7a46;
-  --good-wash: #e2f3e8;
-  --display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
-    --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
-  --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; color-scheme: dark;
-}
-
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
-html, body { background: var(--ice); }
-body {
-  color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
 .wrap { max-width: 760px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 24px; }
-
-nav.site { display: flex; gap: 6px; flex-wrap: wrap; font-size: 14px; }
-nav.site a {
-  color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule); font-weight: 500;
-}
-nav.site a[aria-current="page"] { background: var(--ink); color: var(--ice); border-color: var(--ink); }
-nav.site a:hover { border-color: var(--blue); }
-
-header { display: grid; gap: 6px; }
-.eyebrow {
-  font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
-  display: flex; align-items: center; gap: 10px;
-}
-.eyebrow::before { content: ""; width: 28px; height: 3px; background: var(--blue); }
-h1 {
-  font-family: var(--display); font-weight: 900; font-size: clamp(44px, 9vw, 76px);
-  line-height: .92; margin: 0; text-transform: uppercase; text-wrap: balance;
-}
-h1 span { color: var(--red); }
 .lede { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
-
-button {
-  font: 600 15px/1 var(--body); border-radius: 8px; cursor: pointer; border: 1px solid var(--rule);
-  background: var(--boards); color: var(--ink); padding: 11px 15px;
-}
-button:hover:not(:disabled) { border-color: var(--blue); }
-button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-button:disabled { opacity: .45; cursor: default; }
-.primary {
-  background: var(--red); border-color: var(--red); color: #fff; font-family: var(--display);
-  font-weight: 800; font-size: 19px; letter-spacing: .06em; text-transform: uppercase;
-}
-.primary:hover:not(:disabled) { filter: brightness(1.08); border-color: var(--red); }
-
-.modes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
-.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; padding: 3px; background: var(--boards); gap: 3px; }
-.seg button { border: 0; padding: 8px 14px; border-radius: 6px; background: transparent; font-weight: 600; }
-.seg button[aria-pressed="true"] { background: var(--ink); color: var(--ice); }
 .practice-opts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.record { font-family: var(--mono); font-size: 12.5px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
-.record b { color: var(--ink); font-weight: 500; }
 
 /* ---------- scouting card ---------- */
 .card { background: var(--boards); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
@@ -111,10 +38,6 @@ ol.clues .v { font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
 ol.clues li.locked .v { color: var(--muted); font-weight: 400; font-style: italic; }
 ol.clues li.locked .n { color: var(--rule); }
 .teams { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-.chip {
-  font-family: var(--mono); font-size: 12.5px; font-weight: 500; color: var(--blue); background: var(--blue-wash);
-  border-radius: 5px; padding: 3px 8px; white-space: nowrap;
-}
 
 /* ---------- guess box ---------- */
 .guess { background: var(--boards); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; display: grid; gap: 12px; }
@@ -131,16 +54,8 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
   background: var(--boards); border: 1px solid var(--rule); border-radius: 8px; box-shadow: 0 12px 28px rgb(0 0 0 / .18);
   max-height: 300px; overflow-y: auto;
 }
-.listbox li { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: grid; gap: 1px; }
-.listbox li[aria-selected="true"], .listbox li:hover { background: var(--blue-wash); }
-.listbox .n { font-weight: 600; }
-.listbox .m { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-.listbox .empty { color: var(--muted); cursor: default; }
 .tools { display: flex; gap: 8px; flex-wrap: wrap; }
 .tools button { padding: 9px 13px; font-size: 14px; font-weight: 500; }
-.feedback { margin: 0; font-weight: 600; min-height: 1.5em; }
-.feedback.bad { color: var(--red); }
-.feedback.ok { color: var(--good); }
 
 /* ---------- guesses ---------- */
 .guesses { display: grid; gap: 8px; }
@@ -162,20 +77,7 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
 .verdict { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .big { font-family: var(--display); font-weight: 900; font-size: 84px; line-height: .8; color: var(--good); font-variant-numeric: tabular-nums; }
 .result.lost .big { color: var(--red); }
-.verdict h2 { font-family: var(--display); font-weight: 800; font-size: 30px; text-transform: uppercase; margin: 0; line-height: 1; }
 .verdict p { margin: 4px 0 0; color: var(--muted); }
-.result h3 { font-size: 14px; margin: 4px 0 0; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
-.share-box {
-  font-family: var(--mono); font-size: 13px; white-space: pre-wrap; background: var(--ice); border-radius: 8px; padding: 10px 12px; margin: 0;
-  user-select: all; overflow-wrap: anywhere;
-}
-
-details.how { background: var(--boards); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; }
-details.how summary { cursor: pointer; font-weight: 600; }
-details.how ul { margin: 10px 0 2px; padding-left: 20px; display: grid; gap: 4px; }
-
-footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; display: grid; gap: 6px; }
-footer a { color: var(--blue); }
 @media (prefers-reduced-motion: no-preference) {
   ol.clues li.new, .g-row.new { animation: drop .35s ease-out both; }
   @keyframes drop { from { transform: translateY(6px); opacity: .4; } to { transform: none; opacity: 1; } }
@@ -187,10 +89,10 @@ footer a { color: var(--blue); }
 <div class="wrap">
   <nav class="site" aria-label="Pages">
     <a href="index.html">Find a connection</a>
-    <a href="chain.html">Build the Chain</a>
-    <a href="mystery.html" aria-current="page">Mystery Player</a>
-    <a href="longer.html">Who Played Longer?</a>
-    <a href="roster.html">Name the Roster</a>
+    <a href="chain.html" data-game="chain">Build the Chain</a>
+    <a href="mystery.html" data-game="mystery" aria-current="page">Mystery Player</a>
+    <a href="longer.html" data-game="longer">Who Played Longer?</a>
+    <a href="roster.html" data-game="roster">Name the Roster</a>
   </nav>
 
   <header>
@@ -226,8 +128,8 @@ footer a { color: var(--blue); }
     <label for="g">Who is it?</label>
     <div class="row">
       <div class="field">
-        <input id="g" type="text" role="combobox" aria-expanded="false" aria-controls="g-list" placeholder="Type a player's name">
-        <ul class="listbox" id="g-list" role="listbox" hidden></ul>
+        <input id="g" type="text" placeholder="Type a player's name">
+        <ul class="listbox" id="g-list" hidden></ul>
       </div>
       <button type="submit" class="primary" id="go">Guess</button>
     </div>
@@ -245,7 +147,7 @@ footer a { color: var(--blue); }
     <div id="guess-list"></div>
   </section>
 
-  <details class="how">
+  <details class="how" id="how">
     <summary>How to play</summary>
     <ul>
       <li>You start with one clue. Guess any time.</li>
@@ -263,36 +165,13 @@ footer a { color: var(--blue); }
 </div>
 
 <script>
-const DATA = /*__DATA__*/null;
-const SITE = "https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/mystery.html";
+const SITE = SITE_ROOT + "mystery.html";
 const FIRST_DAY = Date.UTC(2026, 10, 7); // puzzle #1
 const MAX_CLUES = 7;
 
-/* ---------- data ---------- */
-// DATA.p = [[id, name, pos, birthYear], ...]; DATA.r = {"TEAM-SEASON": [playerIndex, ...]}; DATA.t = {TRI: name}
-const P = DATA.p.map(([id, name, pos, born]) => ({ id, name, pos, born, stints: [] }));
-const byId = new Map(P.map((p, i) => [p.id, i]));
-const keys = Object.keys(DATA.r).sort((x, y) => x.split("-")[1] - y.split("-")[1] || (x < y ? -1 : 1));
-const R = keys.map(k => DATA.r[k]);
-keys.forEach((k, s) => R[s].forEach(i => P[i].stints.push(s)));
-const norm = s => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-P.forEach(p => { p.key = norm(p.name); p.words = p.key.split(" "); });
-
-const team = s => keys[s].split("-")[0];
-const season = s => keys[s].split("-")[1];
-const seasonLabel = y => `${y.slice(0, 4)}–${y.slice(6)}`;
-const teamName = t => (DATA.t && DATA.t[t]) || t;
-const posName = { C: "C", L: "LW", R: "RW", D: "D", G: "G" };
-const posLong = { C: "Center", L: "Left wing", R: "Right wing", D: "Defenseman", G: "Goalie" };
+/* ---------- player facts ---------- */
 const isForward = p => "CLR".includes(p.pos);
-function career(p) {
-  if (!p.stints.length) return "no roster data";
-  const teams = [...new Set(p.stints.map(team))];
-  return `${season(p.stints[0]).slice(0, 4)}–${season(p.stints[p.stints.length - 1]).slice(4)} · ${teams.join("/")}`;
-}
-const describe = p => `${posName[p.pos] || p.pos || "?"} · ${career(p)}`;
 const debutYear = p => +season(p.stints[0]).slice(0, 4);
-const seasonsOf = p => new Set(p.stints.map(season)).size;
 // Team runs in career order, e.g. [["QUE", "1990", "1995"], ["COL", "1995", "2009"]]
 function runs(p) {
   const out = [];
@@ -305,33 +184,10 @@ function runs(p) {
   return out.sort((a, b) => a[1] - b[1]);
 }
 
-function search(q, limit = 8) {
-  const words = norm(q).split(" ").filter(Boolean);
-  if (!words.length) return [];
-  const hits = [];
-  for (let i = 0; i < P.length; i++) {
-    const p = P[i];
-    if (words.every(w => p.words.some(pw => pw.startsWith(w)))) hits.push([(p.key === words.join(" ") ? 1000 : 0) + p.stints.length, i]);
-  }
-  return hits.sort((x, y) => y[0] - x[0]).slice(0, limit).map(h => h[1]);
-}
-
 /* ---------- picking players ---------- */
-// Pools count only seasons before 2024-25, so weekly roster updates never change a day's player.
-const CUTOFF = 20242025;
-const seasonsBefore = P.map(p => new Set(p.stints.map(season).filter(y => +y < CUTOFF)).size);
-const poolOf = min => P.map((p, i) => i).filter(i => seasonsBefore[i] >= min);
 const POOLS = { easy: poolOf(15), hard: poolOf(9) };
 const famous = new Set(poolOf(12));
 
-function mulberry32(seed) {
-  return () => {
-    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 const pick = (rand, pool) => pool[Math.floor(rand() * pool.length)];
 
 /* ---------- clues ---------- */
@@ -350,7 +206,7 @@ function cluesFor(i) {
   const p = P[i];
   const rs = runs(p);
   const teams = [...new Set(p.stints.map(team))];
-  const n = seasonsOf(p);
+  const n = seasonsOf(i);
   const decade = Math.floor(debutYear(p) / 10) * 10;
   const mate = bestTeammate(i);
   const first = rs[0], lastRun = rs[rs.length - 1];
@@ -376,27 +232,18 @@ function compare(g, m) {
   const mine = new Set(M.stints.map(team));
   const common = [...new Set(G.stints.map(team))].filter(t => mine.has(t));
   facts.push([common.length ? `Teams in common: ${common.join(", ")}` : "No teams in common", common.length > 0]);
-  const gs = seasonsOf(G), ms = seasonsOf(M);
+  const gs = seasonsOf(g), ms = seasonsOf(m);
   facts.push([Math.abs(gs - ms) <= 1 ? "Similar career length" : ms > gs ? "Mystery player's career was longer" : "Mystery player's career was shorter", Math.abs(gs - ms) <= 1]);
   const wereMates = G.stints.some(s => M.stints.includes(s));
   if (wereMates) facts.push(["They were teammates", true]);
   return facts;
 }
 
-/* ---------- dates & storage ---------- */
-const today = new Date();
-const dkey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-const dateKey = dkey(today);
-const puzzleNo = Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - FIRST_DAY) / 86400000) + 1;
-const store = {
-  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
-};
+const puzzleNo = puzzleNumber(FIRST_DAY);
 
 /* ---------- game ---------- */
 let mode = "daily", level = "easy";
 let S; // { m, clues, shown, guesses:[idx], done, won }
-const $ = id => document.getElementById(id);
 
 function newGame(m) { S = { m, clues: cluesFor(m), shown: 1, guesses: [], done: false, won: false }; }
 function saveDaily() {
@@ -411,7 +258,7 @@ function saveDaily() {
 function startDaily() {
   mode = "daily";
   // Mix the date so the daily player isn't tied to Build the Chain's daily pair.
-  const seed = (+dateKey.replace(/-/g, "")) * 7919 + 17;
+  const seed = dateSeed * 7919 + 17;
   newGame(pick(mulberry32(seed), POOLS.easy));
   const saved = store.get("mystery-daily-" + dateKey);
   if (saved && saved.m === P[S.m].id) {
@@ -445,40 +292,16 @@ $("skip").addEventListener("click", () => {
 });
 $("giveup").addEventListener("click", () => { if (!S.done) { S.done = true; say(""); saveDaily(); render(); } });
 
-(function picker() {
-  const input = $("g"), list = $("g-list");
-  let options = [], active = 0;
-  const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); };
-  const draw = () => {
-    list.innerHTML = "";
-    if (!options.length) list.innerHTML = '<li class="empty">No player by that name. Check the spelling, or try just a last name.</li>';
-    options.forEach((i, n) => {
-      const li = document.createElement("li");
-      li.setAttribute("role", "option"); li.setAttribute("aria-selected", n === active ? "true" : "false");
-      li.innerHTML = '<span class="n"></span><span class="m"></span>';
-      li.querySelector(".n").textContent = P[i].name;
-      li.querySelector(".m").textContent = describe(P[i]);
-      li.addEventListener("mousedown", e => { e.preventDefault(); choose(i); });
-      list.appendChild(li);
-    });
-    list.hidden = false; input.setAttribute("aria-expanded", "true");
-  };
-  const choose = i => { input.value = ""; close(); guess(i); if (!S.done) input.focus(); };
-  input.addEventListener("input", () => { options = search(input.value); active = 0; input.value.trim() ? draw() : close(); });
-  input.addEventListener("keydown", e => {
-    if (list.hidden) return;
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault(); active = (active + (e.key === "ArrowDown" ? 1 : -1) + options.length) % Math.max(options.length, 1); draw();
-    } else if (e.key === "Escape") close();
-  });
-  input.addEventListener("blur", () => setTimeout(close, 100));
-  $("guess").addEventListener("submit", e => {
-    e.preventDefault();
-    if (!input.value.trim()) { say("Type a player's name, then pick from the list.", "bad"); return; }
-    if (options.length) choose(options[list.hidden ? 0 : active]);
-    else say("No player by that name. Check the spelling, or try just a last name.", "bad");
-  });
-})();
+const picker = makePicker($("g"), $("g-list"), {
+  onPick: i => { $("g").value = ""; guess(i); if (!S.done) $("g").focus(); },
+});
+$("guess").addEventListener("submit", e => {
+  e.preventDefault();
+  if (!picker.hasText()) { say("Type a player's name, then pick from the list.", "bad"); return; }
+  const i = picker.current();
+  if (i === null) { say("No player by that name. Check the spelling, or try just a last name.", "bad"); return; }
+  picker.close(); $("g").value = ""; guess(i); if (!S.done) $("g").focus();
+});
 
 /* ---------- rendering ---------- */
 let shownBefore = 0, guessesBefore = 0;
@@ -552,10 +375,7 @@ function renderRecord() {
   const days = Object.keys(hist);
   const solved = days.filter(d => hist[d].clues !== null);
   const avg = solved.length ? (solved.reduce((t, d) => t + hist[d].clues, 0) / solved.length).toFixed(1) : "–";
-  let streak = 0;
-  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  if (!(hist[dkey(d)] && hist[dkey(d)].clues !== null)) d.setDate(d.getDate() - 1);
-  while (hist[dkey(d)] && hist[dkey(d)].clues !== null) { streak++; d.setDate(d.getDate() - 1); }
+  const streak = streakFrom(hist, h => h.clues !== null);
   $("record").innerHTML = `<span>Played <b>${days.length}</b></span><span>Solved <b>${solved.length}</b></span><span>Avg clues <b>${avg}</b></span><span>Streak <b>${streak}</b></span>`;
 }
 
@@ -578,19 +398,16 @@ function renderResult() {
     <div class="verdict"><div class="big">${S.won ? S.shown : "✕"}</div><div><h2></h2><p></p></div></div>
     <div><h3>Share your result</h3></div>
     <pre class="share-box" id="share-text"></pre>
-    <div class="tools"><button type="button" class="primary" id="copy">Copy result</button><button type="button" id="next"></button></div>`;
+    <div class="tools"><button type="button" class="primary" id="copy">Copy result</button><button type="button" id="next"></button></div>
+    <p class="countdown"></p>`;
   box.querySelector("h2").textContent = title;
   box.querySelector(".verdict p").textContent = sub;
   box.querySelector("#share-text").textContent = shareText();
-  box.querySelector("#copy").addEventListener("click", async e => {
-    const btn = e.currentTarget;
-    try { await navigator.clipboard.writeText(shareText()); btn.textContent = "Copied"; }
-    catch (err) {
-      const sel = window.getSelection(), r = document.createRange();
-      r.selectNodeContents(box.querySelector("#share-text")); sel.removeAllRanges(); sel.addRange(r);
-      btn.textContent = "Selected. Press Ctrl+C to copy";
-    }
-  });
+  const cd = box.querySelector(".countdown");
+  if (mode === "daily") startCountdown(cd); else cd.remove();
+  const copyBtn = box.querySelector("#copy");
+  copyBtn.dataset.label = "Copy result";
+  copyBtn.addEventListener("click", () => copyText(copyBtn, shareText(), box.querySelector("#share-text")));
   const next = box.querySelector("#next");
   next.textContent = mode === "daily" ? "Play a practice round" : "New player";
   next.addEventListener("click", startPractice);
@@ -605,6 +422,6 @@ document.querySelectorAll("[data-level]").forEach(b => b.addEventListener("click
   startPractice();
 }));
 
-$("stats").textContent = `${keys.length.toLocaleString()} team-season rosters · ${P.length.toLocaleString()} players · data updated ${DATA.built}`;
+if (firstVisit("mystery")) { $("how").open = true; markSeen("mystery"); }
 location.hash === "#practice" ? startPractice() : startDaily();
 </script>
