@@ -159,7 +159,9 @@ def main() -> None:
     data_js = "window.NHL_DATA=" + json.dumps(compact(load(args.data)), separators=(",", ":"), ensure_ascii=False) + ";\n"
     common_js = (web / "common.js").read_text(encoding="utf-8")
     site_css = (web / "site.css").read_text(encoding="utf-8")
-    version = hashlib.sha256((data_js + common_js + site_css).encode("utf-8")).hexdigest()[:10]
+    # Any change to the data, shared code or a page gives a new version (and fresh offline copies).
+    templates = "".join((web / t).read_text(encoding="utf-8") for t, _, _, _ in PAGES)
+    version = hashlib.sha256((data_js + common_js + site_css + templates + (web / "sw.js").read_text(encoding="utf-8")).encode("utf-8")).hexdigest()[:10]
     for name, text in (("data.js", data_js), ("common.js", common_js)):
         (DOCS / name).write_text(text, encoding="utf-8")
         print(f"Wrote {DOCS / name} ({len(text.encode('utf-8')) / 1024:.0f} KB)")

@@ -1,9 +1,9 @@
 // Offline support. web/build.py fills in the version and the list of files to keep.
 // Pages: try the network first so new puzzles and rosters show up, fall back to the saved copy.
 // Shared files carry ?v=<hash> in their URL, so a saved copy is always the right one.
-const VERSION = "3f92eeb0a9";
+const VERSION = "f4894c9436";
 const CACHE = "nhl-connections-" + VERSION;
-const PRECACHE = ["./", "index.html", "chain.html", "mystery.html", "longer.html", "roster.html", "common.js?v=3f92eeb0a9", "data.js?v=3f92eeb0a9", "manifest.webmanifest", "icons/icon-192.png", "og.png"];
+const PRECACHE = ["./", "index.html", "chain.html", "mystery.html", "longer.html", "roster.html", "common.js?v=f4894c9436", "data.js?v=f4894c9436", "manifest.webmanifest", "icons/icon-192.png", "og.png"];
 const FONT_CACHE = "nhl-connections-fonts";
 
 self.addEventListener("install", event => {
