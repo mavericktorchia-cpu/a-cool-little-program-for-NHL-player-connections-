@@ -97,6 +97,21 @@ teammates**. Tap a player to see both numbers.
 Play it at
 https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/longer.html
 
+## Game: Name the Roster
+
+`docs/roster.html` gives you a team and a season, like the 1993–94 Boston
+Bruins, and a clock. Type as many players from that roster as you can. A last
+name is enough, and correct names fill in on a depth chart as soon as you
+finish typing them. A wrong name tells you if that player was on the team in a
+different season. When time runs out, everyone you missed is filled in.
+
+* **Daily:** the same team-season for everyone (1980–81 to 2023–24), 3 minutes,
+  with a shareable score.
+* **Practice:** pick the era, the team and the clock (2, 3 or 5 minutes, or none).
+
+Play it at
+https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/roster.html
+
 ## Quick start (command line)
 
 You only need Python 3.9 or newer. There's nothing to install.
@@ -149,7 +164,9 @@ How far every NHL player is from them (in teammate hops):
 ## How it works
 
 * **Data:** `data/nhl_rosters.json.gz` holds every team's roster for every
-  season, taken from the public NHL web API (`api-web.nhle.com`). Run
+  season, taken from the public NHL web API (`api-web.nhle.com`). From 2023-24
+  on, the API's roster lists only show end-of-season rosters, so those seasons
+  also add everyone who played a game, from the season stats. Run
   `python -m nhl_connections update` whenever you want the latest rosters.
 * **Graph:** two players are connected if they appear on the same team's
   roster in the same season.
@@ -169,7 +186,7 @@ nhl_connections/
   data.py    # downloads and saves / loads the roster file
   graph.py   # teammate graph, name lookup, shortest path search
   cli.py     # command-line interface
-web/       # page templates (template.html, chain.html, mystery.html, longer.html) + build script
+web/       # page templates (template.html, chain.html, mystery.html, longer.html, roster.html) + build script
 docs/      # built pages (GitHub Pages)
 data/nhl_rosters.json.gz
 tests/       # offline unit tests:  python -m unittest

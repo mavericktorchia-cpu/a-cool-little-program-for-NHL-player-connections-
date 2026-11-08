@@ -51,6 +51,12 @@ PAGES = [
         "Who Played Longer?",
         "Two NHL players, one stat: pick who played more seasons, for more teams, or with more teammates.",
     ),
+    (
+        "roster.html",
+        "roster.html",
+        "Name the Roster",
+        "A daily NHL quiz: name as many players as you can from one team's roster before the clock runs out.",
+    ),
 ]
 
 

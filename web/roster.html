@@ -1,0 +1,541 @@
+<title>Name the Roster</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a locker-room depth chart. The team and clock sit on top like a scoreboard; nameplates fill in below, grouped by position. */
+:root {
+  --ice: #eef3f7;
+  --boards: #ffffff;
+  --ink: #0d1b2a;
+  --muted: #566778;
+  --rule: #d3dde6;
+  --red: #c8102e;
+  --blue: #1d4f9e;
+  --blue-wash: #e3ecf8;
+  --good: #1d7a46;
+  --good-wash: #e2f3e8;
+  --display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
+    --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ice: #0a131e; --boards: #111d2b; --ink: #e6edf4; --muted: #8b9db0; --rule: #223349;
+  --red: #ff4b5c; --blue: #79a6ff; --blue-wash: #172a45; --good: #5fd08f; --good-wash: #12301f; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--ice); }
+body {
+  color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 900px; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 22px; }
+
+nav.site { display: flex; gap: 6px; flex-wrap: wrap; font-size: 14px; }
+nav.site a {
+  color: var(--muted); text-decoration: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule); font-weight: 500;
+}
+nav.site a[aria-current="page"] { background: var(--ink); color: var(--ice); border-color: var(--ink); }
+nav.site a:hover { border-color: var(--blue); }
+
+header { display: grid; gap: 6px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.eyebrow::before { content: ""; width: 28px; height: 3px; background: var(--blue); }
+h1 {
+  font-family: var(--display); font-weight: 900; font-size: clamp(44px, 9vw, 76px);
+  line-height: .92; margin: 0; text-transform: uppercase; text-wrap: balance;
+}
+h1 span { color: var(--red); }
+.lede { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+
+button, select {
+  font: 600 15px/1 var(--body); border-radius: 8px; cursor: pointer; border: 1px solid var(--rule);
+  background: var(--boards); color: var(--ink); padding: 11px 15px;
+}
+select { padding: 9px 12px; font-weight: 500; }
+button:hover:not(:disabled), select:hover { border-color: var(--blue); }
+button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+button:disabled { opacity: .45; cursor: default; }
+.primary {
+  background: var(--red); border-color: var(--red); color: #fff; font-family: var(--display);
+  font-weight: 800; font-size: 19px; letter-spacing: .06em; text-transform: uppercase;
+}
+.primary:hover:not(:disabled) { filter: brightness(1.08); border-color: var(--red); }
+
+.modes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 9px; padding: 3px; background: var(--boards); gap: 3px; }
+.seg button { border: 0; padding: 8px 14px; border-radius: 6px; background: transparent; font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--ice); }
+.opts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.opts label { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: grid; gap: 4px; }
+
+/* ---------- scoreboard ---------- */
+.scoreboard {
+  background: var(--ink); color: var(--ice); border-radius: 12px; padding: 18px 20px;
+  display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;
+}
+@media (max-width: 560px) { .scoreboard { grid-template-columns: 1fr; } }
+.scoreboard .season { font-family: var(--mono); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
+.scoreboard .team { font-family: var(--display); font-weight: 900; font-size: clamp(32px, 6vw, 48px); line-height: .95; text-transform: uppercase; overflow-wrap: anywhere; }
+.clock { display: flex; gap: 22px; }
+.clock div { display: grid; justify-items: end; }
+@media (max-width: 560px) { .clock div { justify-items: start; } }
+.clock .k { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; opacity: .7; }
+.clock .v { font-family: var(--display); font-weight: 900; font-size: 46px; line-height: 1; font-variant-numeric: tabular-nums; }
+.clock .v.time { color: #ffd23f; }
+.clock .v.low { color: #ff6b78; }
+
+/* ---------- input ---------- */
+.entry { display: grid; gap: 10px; }
+.entry .row { display: flex; gap: 10px; flex-wrap: wrap; }
+input[type="text"] {
+  flex: 1 1 260px; min-width: 0; font: 600 20px/1.2 var(--body); color: var(--ink); background: var(--boards);
+  border: 2px solid var(--rule); border-radius: 10px; padding: 14px 16px;
+}
+input[type="text"]:focus { outline: none; border-color: var(--blue); }
+input[type="text"]:disabled { opacity: .5; }
+.feedback { margin: 0; font-weight: 600; min-height: 1.5em; }
+.feedback.ok { color: var(--good); }
+.feedback.bad { color: var(--red); }
+.feedback.near { color: var(--blue); }
+.start-panel {
+  background: var(--boards); border: 1px solid var(--rule); border-radius: 12px; padding: 18px;
+  display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+}
+.start-panel p { margin: 0; max-width: 52ch; }
+
+/* ---------- roster board ---------- */
+.board { display: grid; gap: 18px; }
+.group h2 {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 0 8px;
+  font-family: var(--display); font-weight: 800; font-size: 24px; text-transform: uppercase; border-bottom: 2px solid var(--ink); padding-bottom: 4px;
+}
+.group h2 span { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--muted); }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.slot {
+  display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: center; min-height: 46px;
+  background: var(--boards); border: 1px dashed var(--rule); border-radius: 8px; padding: 6px 10px 6px 6px; min-width: 0;
+}
+.slot .p {
+  font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--muted); background: var(--ice);
+  border-radius: 5px; text-align: center; padding: 4px 0;
+}
+.slot .n { font-weight: 600; font-size: 15px; line-height: 1.15; overflow-wrap: anywhere; }
+.slot.empty .n { color: var(--rule); letter-spacing: .2em; }
+.slot.found { border-style: solid; border-color: var(--good); background: var(--good-wash); }
+.slot.found .p { background: var(--good); color: #fff; }
+.slot.missed { border-style: solid; }
+.slot.missed .n { color: var(--muted); font-weight: 500; }
+.misses { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.misses s { font-family: var(--mono); font-size: 12.5px; background: var(--boards); border: 1px solid var(--rule); border-radius: 5px; padding: 2px 7px; }
+
+/* ---------- result ---------- */
+.result { background: var(--boards); border: 2px solid var(--ink); border-radius: 12px; padding: 18px; display: grid; gap: 14px; }
+.verdict { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.big { font-family: var(--display); font-weight: 900; font-size: 76px; line-height: .8; color: var(--red); font-variant-numeric: tabular-nums; }
+.verdict h2 { font-family: var(--display); font-weight: 800; font-size: 30px; text-transform: uppercase; margin: 0; line-height: 1; }
+.verdict p { margin: 4px 0 0; color: var(--muted); }
+.result h3 { font-size: 14px; margin: 4px 0 0; font-family: var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.share-box {
+  font-family: var(--mono); font-size: 13px; white-space: pre-wrap; background: var(--ice); border-radius: 8px; padding: 10px 12px; margin: 0;
+  user-select: all; overflow-wrap: anywhere;
+}
+.tools { display: flex; gap: 8px; flex-wrap: wrap; }
+
+details.how { background: var(--boards); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; }
+details.how summary { cursor: pointer; font-weight: 600; }
+details.how ul { margin: 10px 0 2px; padding-left: 20px; display: grid; gap: 4px; }
+
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 16px; display: grid; gap: 6px; }
+footer a { color: var(--blue); }
+@media (prefers-reduced-motion: no-preference) {
+  .slot.pop { animation: pop .35s ease-out; }
+  @keyframes pop { 0% { transform: scale(.94); } 60% { transform: scale(1.03); } 100% { transform: none; } }
+  .shake { animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+}
+</style>
+
+<div class="wrap">
+  <nav class="site" aria-label="Pages">
+    <a href="index.html">Find a connection</a>
+    <a href="chain.html">Build the Chain</a>
+    <a href="mystery.html">Mystery Player</a>
+    <a href="longer.html">Who Played Longer?</a>
+    <a href="roster.html" aria-current="page">Name the Roster</a>
+  </nav>
+
+  <header>
+    <div class="eyebrow" id="eyebrow">Daily roster</div>
+    <h1>Name the <span>Roster</span></h1>
+    <p class="lede">You get a team and a season. Name as many players from that roster as you can before the clock runs out.</p>
+  </header>
+
+  <div class="modes">
+    <div class="seg" role="group" aria-label="Mode">
+      <button type="button" id="mode-daily" aria-pressed="true">Daily</button>
+      <button type="button" id="mode-practice" aria-pressed="false">Practice</button>
+    </div>
+    <div class="opts" id="practice-opts" hidden>
+      <label for="era">Era
+        <select id="era">
+          <option value="modern">2000 to today</option>
+          <option value="classic">1967 to 1999</option>
+          <option value="six">1942 to 1967</option>
+          <option value="early">1917 to 1942</option>
+          <option value="any">Any season</option>
+        </select>
+      </label>
+      <label for="team">Team <select id="team"></select></label>
+      <label for="clock">Clock
+        <select id="clock">
+          <option value="180">3 minutes</option>
+          <option value="120">2 minutes</option>
+          <option value="300">5 minutes</option>
+          <option value="0">No clock</option>
+        </select>
+      </label>
+      <button type="button" id="new-roster" style="align-self: end;">New roster</button>
+    </div>
+  </div>
+
+  <section class="scoreboard" aria-label="Team and clock">
+    <div><div class="season" id="season"></div><div class="team" id="team-name"></div></div>
+    <div class="clock">
+      <div><span class="k">Named</span><span class="v" id="count">0/0</span></div>
+      <div><span class="k">Time</span><span class="v time" id="time">3:00</span></div>
+    </div>
+  </section>
+
+  <section class="start-panel" id="start-panel">
+    <p id="start-text"></p>
+    <button type="button" class="primary" id="start">Start the clock</button>
+  </section>
+
+  <form class="entry" id="entry" autocomplete="off" hidden>
+    <label for="g" class="sr" hidden>Player name</label>
+    <div class="row">
+      <input id="g" type="text" placeholder="Type a player, e.g. a last name" autocapitalize="words" spellcheck="false">
+      <button type="button" id="done">I'm done</button>
+    </div>
+    <p class="feedback" id="feedback" aria-live="polite"></p>
+    <div class="misses" id="misses" hidden></div>
+  </form>
+
+  <section class="result" id="result" hidden aria-live="polite"></section>
+
+  <section class="board" id="board" aria-label="Roster"></section>
+
+  <details class="how">
+    <summary>How to play</summary>
+    <ul>
+      <li>Type a player's name. A last name is enough, and a correct name fills in as soon as you finish typing it.</li>
+      <li>If two players on the roster share a last name, type the first name too.</li>
+      <li>The roster is everyone who was on the team at any point that season, traded players included.</li>
+      <li>A wrong name tells you if that player was on the team in a different season.</li>
+      <li>Everyone gets the same daily roster. A new one starts at midnight, your time.</li>
+    </ul>
+  </details>
+
+  <footer>
+    <div id="stats"></div>
+    <div>Rosters come from the public NHL API. Fan project, not affiliated with or endorsed by the National Hockey League. <a href="https://github.com/mavericktorchia-cpu/a-cool-little-program-for-NHL-player-connections-">Source on GitHub</a></div>
+  </footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const SITE = "https://mavericktorchia-cpu.github.io/a-cool-little-program-for-NHL-player-connections-/roster.html";
+const FIRST_DAY = Date.UTC(2026, 10, 8); // daily #1
+const DAILY_SECONDS = 180;
+
+/* ---------- data ---------- */
+const P = DATA.p.map(([id, name, pos]) => ({ id, name, pos, stints: [] }));
+const keys = Object.keys(DATA.r).sort((x, y) => x.split("-")[1] - y.split("-")[1] || (x < y ? -1 : 1));
+const R = keys.map(k => DATA.r[k]);
+keys.forEach((k, s) => R[s].forEach(i => P[i].stints.push(s)));
+const norm = s => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+// A player can be named by full name, by last word ("Pageau"), or by everything after the first name ("van Riemsdyk").
+P.forEach(p => {
+  p.key = norm(p.name); p.words = p.key.split(" ");
+  p.lasts = [...new Set([p.words.slice(1).join(" "), p.words[p.words.length - 1]].filter(Boolean))];
+});
+const named = (p, t) => p.key === t || p.lasts.includes(t);
+const team = s => keys[s].split("-")[0];
+const season = s => keys[s].split("-")[1];
+const seasonLabel = y => `${y.slice(0, 4)}–${y.slice(6)}`;
+const teamName = t => (DATA.t && DATA.t[t]) || t;
+const posName = { C: "C", L: "LW", R: "RW", D: "D", G: "G" };
+const GROUPS = [["Forwards", "CLR"], ["Defense", "D"], ["Goalies", "G"]];
+
+/* ---------- picking rosters ---------- */
+// Daily rosters come from finished seasons (1980-81 through 2023-24) so they never change.
+const ERAS = {
+  modern: [20002001, 99999999], classic: [19671968, 19992000], six: [19421943, 19661967],
+  early: [19171918, 19411942], any: [0, 99999999], daily: [19801981, 20232024],
+};
+function candidates(era, tm) {
+  const [lo, hi] = ERAS[era];
+  return keys.map((k, s) => s).filter(s => {
+    const y = +season(s);
+    return y >= lo && y <= hi && R[s].length >= 18 && (!tm || team(s) === tm);
+  });
+}
+function mulberry32(seed) {
+  return () => {
+    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---------- dates & storage ---------- */
+const today = new Date();
+const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+const dailyNo = Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - FIRST_DAY) / 86400000) + 1;
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+
+/* ---------- game ---------- */
+let mode = "daily";
+let G; // { s, roster:[idx], found:Set, misses:[text], seconds, startedAt, ended, foundOrder:[idx] }
+let timer = null;
+const $ = id => document.getElementById(id);
+
+function newGame(s, seconds) {
+  clearInterval(timer);
+  const roster = [...R[s]].sort((a, b) => P[b].stints.length - P[a].stints.length);
+  G = { s, roster, found: new Set(), foundOrder: [], misses: [], seconds, startedAt: null, ended: false };
+}
+function saveDaily() {
+  if (mode !== "daily") return;
+  store.set("roster-daily-" + dateKey, {
+    key: keys[G.s], found: G.foundOrder.map(i => P[i].id), misses: G.misses, startedAt: G.startedAt, ended: G.ended,
+  });
+}
+function startDaily() {
+  mode = "daily";
+  const pool = candidates("daily");
+  const s = pool[Math.floor(mulberry32((+dateKey.replace(/-/g, "")) * 2654435 + 11)() * pool.length)];
+  newGame(s, DAILY_SECONDS);
+  const saved = store.get("roster-daily-" + dateKey);
+  if (saved && saved.key === keys[s]) {
+    const ids = new Map(G.roster.map(i => [P[i].id, i]));
+    for (const id of saved.found || []) if (ids.has(id)) { G.found.add(ids.get(id)); G.foundOrder.push(ids.get(id)); }
+    G.misses = saved.misses || [];
+    G.startedAt = saved.startedAt || null;
+    G.ended = !!saved.ended;
+    if (G.startedAt && !G.ended && remaining() <= 0) G.ended = true;
+  }
+  render();
+  if (G.startedAt && !G.ended) run();
+}
+function startPractice() {
+  mode = "practice";
+  const pool = candidates($("era").value, $("team").value);
+  if (!pool.length) { render(); say("No rosters match that era and team. Try a different combination.", "bad"); return; }
+  newGame(pool[Math.floor(Math.random() * pool.length)], +$("clock").value);
+  render();
+}
+
+const remaining = () => G.seconds ? Math.max(0, G.seconds - Math.floor((Date.now() - G.startedAt) / 1000)) : Infinity;
+function start() {
+  if (G.startedAt || G.ended) return;
+  G.startedAt = Date.now();
+  saveDaily(); render(); run();
+  $("g").focus();
+}
+function run() {
+  clearInterval(timer);
+  tick();
+  timer = setInterval(tick, 250);
+}
+function tick() {
+  if (!G.startedAt || G.ended) return;
+  const r = remaining();
+  const t = $("time");
+  if (r === Infinity) { t.textContent = clockText(Math.floor((Date.now() - G.startedAt) / 1000)); return; }
+  t.textContent = clockText(r);
+  t.classList.toggle("low", r <= 15);
+  if (r <= 0) end();
+}
+const clockText = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+function end() {
+  if (G.ended) return;
+  G.ended = true; clearInterval(timer);
+  saveDaily();
+  if (mode === "daily") {
+    const hist = store.get("roster-history") || {};
+    hist[dateKey] = { found: G.found.size, total: G.roster.length };
+    store.set("roster-history", hist);
+  }
+  say("");
+  render();
+}
+
+/* ---------- matching ---------- */
+// Players on this roster not yet named whose full name or last name equals the text.
+function matches(text) {
+  const t = norm(text);
+  if (t.length < 2) return [];
+  return G.roster.filter(i => !G.found.has(i) && named(P[i], t));
+}
+function accept(i) {
+  G.found.add(i); G.foundOrder.push(i);
+  $("g").value = "";
+  say(`${P[i].name} ✓`, "ok");
+  saveDaily(); render(i);
+  if (G.found.size === G.roster.length) end();
+}
+function onInput() {
+  if (!G.startedAt || G.ended) return;
+  const m = matches($("g").value);
+  if (m.length === 1) accept(m[0]);
+}
+function onSubmit(e) {
+  e.preventDefault();
+  if (!G.startedAt || G.ended) return;
+  const text = $("g").value.trim();
+  if (!text) return;
+  const t = norm(text);
+  const m = matches(text);
+  if (m.length === 1) { accept(m[0]); return; }
+  if (m.length > 1) { say(`More than one ${text} on this roster. Add the first name.`, "near"); return; }
+  if (G.roster.some(i => G.found.has(i) && named(P[i], t))) { say(`Already named.`, "near"); $("g").value = ""; return; }
+  // Not on the roster: was it someone who played for this team in another season?
+  const tm = team(G.s);
+  const who = P.filter(p => named(p, t));
+  const sameTeam = who.find(p => p.stints.some(s => team(s) === tm));
+  if (sameTeam) say(`${sameTeam.name} played for the ${teamName(tm)}, but not in ${seasonLabel(season(G.s))}.`, "near");
+  else say(who.length ? `${who[0].name} isn't on this roster.` : `No player called "${text}" on this roster.`, "bad");
+  if (!G.misses.includes(text)) G.misses.push(text);
+  $("g").value = "";
+  const f = $("entry"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
+  saveDaily(); render();
+}
+function say(msg, kind = "") { const f = $("feedback"); f.textContent = msg; f.className = "feedback " + kind; }
+
+/* ---------- rendering ---------- */
+function render(popped) {
+  const daily = mode === "daily";
+  $("mode-daily").setAttribute("aria-pressed", daily);
+  $("mode-practice").setAttribute("aria-pressed", !daily);
+  $("practice-opts").hidden = daily;
+  $("eyebrow").textContent = daily
+    ? `Daily roster #${dailyNo} · ${today.toLocaleDateString(undefined, { month: "long", day: "numeric" })}`
+    : "Practice";
+  if (!G) return;
+
+  $("season").textContent = `${seasonLabel(season(G.s))} season`;
+  $("team-name").textContent = teamName(team(G.s));
+  $("count").textContent = `${G.found.size}/${G.roster.length}`;
+  const t = $("time");
+  if (!G.startedAt) { t.textContent = G.seconds ? clockText(G.seconds) : "0:00"; t.classList.remove("low"); }
+  else if (G.ended && G.seconds) t.textContent = clockText(remaining());
+
+  const started = !!G.startedAt;
+  $("start-panel").hidden = started || G.ended;
+  $("start-text").textContent = `${G.roster.length} players were on this roster. ${G.seconds ? `You have ${G.seconds / 60} minutes.` : "There's no clock, so take your time."} Ready?`;
+  $("entry").hidden = !started || G.ended;
+  $("g").disabled = !started || G.ended;
+
+  const mb = $("misses");
+  mb.hidden = !G.misses.length || G.ended;
+  mb.innerHTML = "";
+  if (G.misses.length) { mb.append("Misses:"); G.misses.forEach(m => { const s = document.createElement("s"); s.textContent = m; mb.appendChild(s); }); }
+
+  // roster board
+  const board = $("board");
+  board.innerHTML = "";
+  for (const [label, codes] of GROUPS) {
+    const members = G.roster.filter(i => codes.includes(P[i].pos || "C"));
+    if (!members.length) continue;
+    const got = members.filter(i => G.found.has(i)).length;
+    const sec = document.createElement("div");
+    sec.className = "group";
+    sec.innerHTML = `<h2>${label} <span>${got}/${members.length}</span></h2><div class="slots"></div>`;
+    const slots = sec.querySelector(".slots");
+    // Named players first, in the order you got them; then the rest.
+    const ordered = [...members.filter(i => G.found.has(i)).sort((a, b) => G.foundOrder.indexOf(a) - G.foundOrder.indexOf(b)),
+                     ...members.filter(i => !G.found.has(i))];
+    for (const i of ordered) {
+      const found = G.found.has(i);
+      const el = document.createElement("div");
+      el.className = "slot " + (found ? "found" : G.ended ? "missed" : "empty") + (i === popped ? " pop" : "");
+      el.innerHTML = '<span class="p"></span><span class="n"></span>';
+      el.querySelector(".p").textContent = posName[P[i].pos] || "?";
+      el.querySelector(".n").textContent = found || G.ended ? P[i].name : "• • •";
+      slots.appendChild(el);
+    }
+    board.appendChild(sec);
+  }
+  renderResult();
+}
+
+function shareText() {
+  const pct = Math.round((100 * G.found.size) / G.roster.length);
+  const bar = Array.from({ length: 10 }, (_, k) => (k < Math.floor(pct / 10) ? "🟩" : "⬜")).join("");
+  const title = mode === "daily" ? `Name the Roster #${dailyNo}` : "Name the Roster (practice)";
+  return `${title}\n🏒 ${seasonLabel(season(G.s))} ${teamName(team(G.s))}\n${bar} ${G.found.size}/${G.roster.length} (${pct}%)\n${SITE}`;
+}
+function renderResult() {
+  const box = $("result");
+  box.hidden = !G.ended;
+  if (!G.ended) return;
+  const pct = Math.round((100 * G.found.size) / G.roster.length);
+  const title = pct === 100 ? "The whole roster" : pct >= 60 ? "General manager" : pct >= 40 ? "Head scout" : pct >= 20 ? "Season ticket holder" : "Bandwagon fan";
+  box.innerHTML = `
+    <div class="verdict"><div class="big">${G.found.size}/${G.roster.length}</div><div><h2></h2><p></p></div></div>
+    <div><h3>Share your result</h3></div>
+    <pre class="share-box" id="share-text"></pre>
+    <div class="tools"><button type="button" class="primary" id="copy">Copy result</button><button type="button" id="again"></button></div>`;
+  box.querySelector("h2").textContent = title;
+  box.querySelector(".verdict p").textContent = `You named ${pct}% of the roster. Everyone you missed is filled in below.`;
+  box.querySelector("#share-text").textContent = shareText();
+  box.querySelector("#copy").addEventListener("click", async e => {
+    const btn = e.currentTarget;
+    try { await navigator.clipboard.writeText(shareText()); btn.textContent = "Copied"; }
+    catch (err) {
+      const sel = window.getSelection(), r = document.createRange();
+      r.selectNodeContents(box.querySelector("#share-text")); sel.removeAllRanges(); sel.addRange(r);
+      btn.textContent = "Selected. Press Ctrl+C to copy";
+    }
+  });
+  const again = box.querySelector("#again");
+  again.textContent = mode === "daily" ? "Play a practice roster" : "New roster";
+  again.addEventListener("click", startPractice);
+}
+
+/* ---------- controls ---------- */
+const teamSelect = $("team");
+teamSelect.innerHTML = '<option value="">Any team</option>' +
+  [...new Set(keys.map(k => k.split("-")[0]))].sort((a, b) => teamName(a).localeCompare(teamName(b)))
+    .map(t => `<option value="${t}">${teamName(t)}</option>`).join("");
+$("start").addEventListener("click", start);
+$("done").addEventListener("click", end);
+$("g").addEventListener("input", onInput);
+$("entry").addEventListener("submit", onSubmit);
+$("mode-daily").addEventListener("click", () => { say(""); startDaily(); });
+$("mode-practice").addEventListener("click", () => { say(""); startPractice(); });
+$("new-roster").addEventListener("click", () => { say(""); startPractice(); });
+["era", "team", "clock"].forEach(id => $(id).addEventListener("change", () => { say(""); startPractice(); }));
+
+$("stats").textContent = `${keys.length.toLocaleString()} team-season rosters · ${P.length.toLocaleString()} players · data updated ${DATA.built}`;
+location.hash === "#practice" ? startPractice() : startDaily();
+</script>
