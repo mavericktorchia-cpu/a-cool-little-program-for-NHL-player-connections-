@@ -81,7 +81,8 @@ class TeammateGraph:
 
     def describe(self, pid: int) -> str:
         info = self.players[pid]
-        return f"{info['name']} ({info.get('pos') or '?'}, {self.career(pid)}) [id {pid}]"
+        pos = {"L": "LW", "R": "RW"}.get(info.get("pos") or "", info.get("pos") or "?")
+        return f"{info['name']} ({pos}, {self.career(pid)}) [id {pid}]"
 
     def find(self, query: str) -> int:
         """Resolve a name (or numeric NHL id) to a single player id."""

@@ -42,11 +42,26 @@ def get_json(url: str, retries: int = 4, timeout: float = 30.0):
     raise RuntimeError(f"Giving up on {url}: {last_error}")
 
 
+SKIP_CODES = {"NHL", "TBD"}  # placeholder entries in the team list, not real clubs
+
+
+def teams() -> list[dict]:
+    """Every NHL team record, past and present: id, triCode, fullName, franchiseId."""
+    return [t for t in get_json(f"{STATS_API}/team")["data"] if t.get("triCode") and t["triCode"] not in SKIP_CODES]
+
+
 def team_codes() -> list[str]:
     """Every NHL team tri-code, past and present (e.g. MTL, HFD, QUE, UTA)."""
-    data = get_json(f"{STATS_API}/team")["data"]
-    skip = {"NHL", "TBD"}  # placeholder entries, not real clubs
-    return sorted({t["triCode"] for t in data if t.get("triCode") and t["triCode"] not in skip})
+    return sorted({t["triCode"] for t in teams()})
+
+
+def season_team_names(season: int) -> dict[int, str]:
+    """{team id: full name} for the teams that played the regular season ``season``."""
+    try:
+        data = get_json(f"{STATS_API}/team/summary?cayenneExp=seasonId={season}%20and%20gameTypeId=2&limit=100")
+    except NotFound:
+        return {}
+    return {t["teamId"]: t["teamFullName"] for t in data.get("data") or [] if t.get("teamId") and t.get("teamFullName")}
 
 
 def team_seasons(team: str) -> list[int]:

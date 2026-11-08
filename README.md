@@ -131,7 +131,13 @@ cd a-cool-little-program-for-NHL-player-connections-
 python -m nhl_connections path "Sidney Crosby" "Wayne Gretzky"
 ```
 
-Optionally, `pip install .` adds an `nhl-connections` command you can run from anywhere.
+To get an `nhl-connections` command you can run from anywhere (the roster data
+comes along):
+
+```bash
+pip install git+https://github.com/mavericktorchia-cpu/a-cool-little-program-for-NHL-player-connections-.git
+nhl-connections path "Sidney Crosby" "Wayne Gretzky"
+```
 
 ## Commands
 
@@ -142,7 +148,7 @@ Optionally, `pip install .` adds an `nhl-connections` command you can run from a
 | `teammates A [--limit N]` | Everyone A ever shared a roster with, most seasons together first |
 | `info A` | A's roster history, plus how many players are 1, 2, 3... hops away |
 | `search NAME` | Look up players (handy for telling namesakes apart) |
-| `update` | Re-download every roster from the NHL API (about 1 minute) |
+| `update` | Re-download every roster from the NHL API (about 2 minutes) |
 
 ### Finding players
 
@@ -172,16 +178,28 @@ How far every NHL player is from them (in teammate hops):
 
 ## How it works
 
-* **Data:** `data/nhl_rosters.json.gz` holds every team's roster for every
-  season, taken from the public NHL web API (`api-web.nhle.com`). From 2023-24
-  on, the API's roster lists only show end-of-season rosters, so those seasons
-  also add everyone who played a game, from the season stats. Run
-  `python -m nhl_connections update` whenever you want the latest rosters.
+* **Data:** `nhl_connections/rosters.json.gz` holds every team's roster for
+  every season, taken from the public NHL web API (`api-web.nhle.com`). From
+  2023-24 on, the API's roster lists only show end-of-season rosters, so those
+  seasons also add everyone who played a game, from the season stats. Team
+  names are kept per season (the 1993–94 *Mighty Ducks of Anaheim*, the
+  2024–25 *Utah Hockey Club*). Run `python -m nhl_connections update` whenever
+  you want the latest rosters.
+* **Safety check:** `update` refuses to save a download that would lose
+  history. If any finished season goes missing or loses more than 10% of its
+  players (which happens when the API has a bad day), nothing is written and
+  the weekly job fails instead of publishing bad data. Use `--allow-shrink`
+  when a change is expected.
 * **Graph:** two players are connected if they appear on the same team's
   roster in the same season.
 * **Search:** a bidirectional breadth-first search grows outward from both
   players at once and stops where the two sides meet. That always gives the
   fewest possible hops, and it takes milliseconds.
+* **Daily puzzles** are picked from the date, so everyone gets the same one.
+  They only use seasons that ended at least a year before the puzzle's year,
+  which never change, so roster updates can't alter a day's puzzle. Each
+  January the window moves forward a season, so newer rosters and recently
+  retired players keep joining in.
 
 > **Note:** "teammates" means *on the same season roster*. Two players traded
 > in opposite directions mid-season can count as teammates even if they never
@@ -191,6 +209,7 @@ How far every NHL player is from them (in teammate hops):
 
 ```
 nhl_connections/
+  rosters.json.gz  # every roster, shipped with the package
   api.py     # minimal NHL API client (standard library only)
   data.py    # downloads and saves / loads the roster file
   graph.py   # teammate graph, name lookup, shortest path search
@@ -203,9 +222,9 @@ web/
   fonts/     # the three typefaces (SIL Open Font License), hosted with the site
   build.py   # builds docs/ (pages, data.js, manifest, icons)
 docs/      # the built site (GitHub Pages)
-data/nhl_rosters.json.gz
 tests/
   test_graph.py  # unit tests:     python -m unittest
+  test_data.py   # downloader and safety check, against a fake NHL API
   smoke.js       # browser test:   node tests/smoke.js
 ```
 

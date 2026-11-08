@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -91,10 +92,13 @@ def cmd_search(graph: TeammateGraph, args) -> None:
 
 
 def cmd_update(args) -> None:
-    datafile.download(args.data, workers=args.workers, first_season=args.since)
+    try:
+        datafile.download(args.data, workers=args.workers, first_season=args.since, allow_shrink=args.allow_shrink)
+    except datafile.DataShrank as exc:
+        sys.exit(str(exc))
 
 
-def main(argv: list[str] | None = None) -> None:
+def _main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         prog="nhl-connections",
         description="Find how any two NHL players are connected through teammates.",
@@ -121,6 +125,9 @@ def main(argv: list[str] | None = None) -> None:
     p = sub.add_parser("update", help="re-download all rosters from the NHL API")
     p.add_argument("--workers", type=int, default=8)
     p.add_argument("--since", type=int, metavar="SEASON", help="only seasons from e.g. 20002001 on")
+    p.add_argument(
+        "--allow-shrink", action="store_true", help="save even if finished seasons lose players (normally refused)"
+    )
 
     args = parser.parse_args(argv)
     if args.command == "update":
@@ -131,6 +138,15 @@ def main(argv: list[str] | None = None) -> None:
     {"path": cmd_path, "teammates": cmd_teammates, "info": cmd_info, "search": cmd_search}[args.command](
         graph, args
     )
+
+
+def main(argv: list[str] | None = None) -> None:
+    try:
+        _main(argv)
+    except BrokenPipeError:
+        # Output was piped into something like `head` that stopped reading; exit quietly.
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        sys.exit(1)
 
 
 if __name__ == "__main__":
