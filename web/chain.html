@@ -153,6 +153,7 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
   <footer>
     <div id="stats"></div>
     <div>"Teammates" means on the same team's roster in the same season. Data from the public NHL API. Fan project, not affiliated with or endorsed by the National Hockey League. <a href="https://github.com/mavericktorchia-cpu/a-cool-little-program-for-NHL-player-connections-">Source on GitHub</a></div>
+    <div>No accounts, ads or tracking. Your game progress is saved only in this browser.</div>
   </footer>
 </div>
 
@@ -170,21 +171,26 @@ const chainPool = min => P.map((p, i) => i).filter(i => stintsBefore[i] >= min);
 const POOLS = { famous: chainPool(13), deep: chainPool(8) };
 
 const LEVELS = { easy: [2, 2], medium: [3, 3], hard: [4, 6], daily: [3, 4] };
+// From 2027, daily pairs are chosen on the fixed part of the graph (seasons before CUTOFF), so a
+// trade during the season can't change a day's pair. Par is always the true shortest chain.
+const FROZEN_FROM = "2027-01-01";
 function pickPair(rand, level) {
   const [lo, hi] = LEVELS[level];
   const pool = level === "hard" ? POOLS.deep : POOLS.famous;
+  const limit = level === "daily" && dateKey >= FROZEN_FROM ? CUTOFF_INDEX : Infinity;
   let fallback = null;
   for (let tries = 0; tries < 400; tries++) {
     const a = pool[Math.floor(rand() * pool.length)], b = pool[Math.floor(rand() * pool.length)];
     if (a === b) continue;
-    const path = shortestPath(a, b);
+    const path = shortestPath(a, b, undefined, limit);
     if (!path) continue;
     const d = path.length - 1;
-    if (d >= lo && d <= hi) return { a, b, par: d };
+    if (d >= lo && d <= hi) return withPar({ a, b, par: d }, limit);
     if (!fallback || Math.abs(d - lo) < Math.abs(fallback.par - lo)) fallback = { a, b, par: d };
   }
-  return fallback;
+  return fallback && withPar(fallback, limit);
 }
+const withPar = (pair, limit) => limit === Infinity ? pair : { ...pair, par: shortestPath(pair.a, pair.b).length - 1 };
 
 const puzzleNo = puzzleNumber(FIRST_DAY);
 
@@ -274,7 +280,7 @@ $("hint").addEventListener("click", () => {
   G.hints++;
   if (G.hintLevel === 0) {
     const st = shared(prev, next)[0];
-    say(`Hint: look at the ${teamName(keys[st].split("-")[0])} roster in ${seasonLabel(keys[st].split("-")[1])}.`, "hint");
+    say(`Hint: look at the ${stintTeamName(st)} roster in ${seasonLabel(season(st))}.`, "hint");
     G.hintLevel = 1;
   } else {
     const initials = P[next].name.split(/\s+/).map(w => w[0]).join(". ") + ".";
@@ -318,7 +324,7 @@ function linkRow(a, b, isNew) {
   via.append("Teammates on");
   st.slice(0, 3).forEach(s => {
     const c = document.createElement("span"); c.className = "chip"; c.textContent = stintLabel(s);
-    c.title = teamName(keys[s].split("-")[0]); via.appendChild(c);
+    c.title = stintTeamName(s); via.appendChild(c);
   });
   if (st.length > 3) via.append(`+${st.length - 3} more`);
   li.appendChild(via);

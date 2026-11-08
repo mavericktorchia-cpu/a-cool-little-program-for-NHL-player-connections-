@@ -1,9 +1,9 @@
 // Offline support. web/build.py fills in the version and the list of files to keep.
 // Pages: try the network first so new puzzles and rosters show up, fall back to the saved copy.
 // Shared files carry ?v=<hash> in their URL, so a saved copy is always the right one.
-const VERSION = "512ea13b85";
+const VERSION = "49db061297";
 const CACHE = "nhl-connections-" + VERSION;
-const PRECACHE = ["./", "index.html", "chain.html", "mystery.html", "longer.html", "roster.html", "common.js?v=512ea13b85", "data.js?v=512ea13b85", "manifest.webmanifest", "icons/icon-192.png", "og.png", "fonts/barlow-400.woff2", "fonts/barlow-500.woff2", "fonts/barlow-600.woff2", "fonts/big-shoulders-display.woff2", "fonts/ibm-plex-mono-400.woff2", "fonts/ibm-plex-mono-500.woff2"];
+const PRECACHE = ["./", "index.html", "chain.html", "mystery.html", "longer.html", "roster.html", "common.js?v=49db061297", "data.js?v=49db061297", "manifest.webmanifest", "icons/icon-192.png", "og.png", "fonts/barlow-400.woff2", "fonts/barlow-500.woff2", "fonts/barlow-600.woff2", "fonts/big-shoulders-display.woff2", "fonts/ibm-plex-mono-400.woff2", "fonts/ibm-plex-mono-500.woff2"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(PRECACHE)).then(() => self.skipWaiting()));

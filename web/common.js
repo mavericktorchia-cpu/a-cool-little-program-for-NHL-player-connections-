@@ -8,7 +8,7 @@ const DATA = window.NHL_DATA;
 /* ---------- roster data ---------- */
 // DATA.p = [[id, name, pos, birthYear], ...]
 // DATA.r = {"TEAM-SEASON": [playerIndex, ...]}
-// DATA.t = {TRI: "Full team name"}
+// DATA.t = {TRI: "Current team name"}, DATA.tn = {"TRI-SEASON": "Name that season"}
 const P = DATA.p.map(([id, name, pos, born]) => ({ id, name, pos, born, stints: [] }));
 const byId = new Map(P.map((p, i) => [p.id, i]));
 // Team-seasons in chronological order; a player's stints are indexes into this list.
@@ -24,6 +24,9 @@ const season = s => keys[s].split("-")[1];
 const seasonLabel = y => `${String(y).slice(0, 4)}–${String(y).slice(6)}`;
 const stintLabel = s => `${team(s)} ${seasonLabel(season(s))}`;
 const teamName = t => (DATA.t && DATA.t[t]) || t;
+// The name a team used in a given season, e.g. "Mighty Ducks of Anaheim" for ANA in 1999-00.
+const teamNameIn = (t, y) => (DATA.tn && DATA.tn[`${t}-${y}`]) || teamName(t);
+const stintTeamName = s => teamNameIn(team(s), season(s));
 const posName = { C: "C", L: "LW", R: "RW", D: "D", G: "G" };
 const posLong = { C: "Center", L: "Left wing", R: "Right wing", D: "Defenseman", G: "Goalie" };
 
@@ -57,7 +60,8 @@ function search(q, limit = 8) {
 
 /* ---------- teammate graph ---------- */
 // Bidirectional breadth-first search: fewest teammate hops from a to b, skipping `avoid`.
-function shortestPath(a, b, avoid = new Set()) {
+// With `limit`, only team-seasons before that index in `keys` count (they're in date order).
+function shortestPath(a, b, avoid = new Set(), limit = Infinity) {
   if (a === b) return [a];
   const fw = new Map([[a, -1]]), bw = new Map([[b, -1]]);
   const seenF = new Set(), seenB = new Set();
@@ -65,6 +69,7 @@ function shortestPath(a, b, avoid = new Set()) {
   const expand = (frontier, tree, seen) => {
     const next = [];
     for (const p of frontier) for (const s of P[p].stints) {
+      if (s >= limit) break;  // a player's stints are in date order
       if (seen.has(s)) continue;
       seen.add(s);
       for (const o of R[s]) if (!tree.has(o) && !avoid.has(o)) { tree.set(o, p); next.push(o); }
@@ -86,9 +91,19 @@ function shortestPath(a, b, avoid = new Set()) {
 }
 
 /* ---------- daily puzzles ---------- */
-// Pools for daily puzzles only count seasons before 2024-25, so weekly roster updates
-// never change a day's puzzle.
-const CUTOFF = 20242025;
+const today = new Date();
+const dayKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const dateKey = dayKey(today);
+const dateSeed = +dateKey.replace(/-/g, "");
+const todayLabel = today.toLocaleDateString(undefined, { month: "long", day: "numeric" });
+// Puzzle number for a game whose #1 was on firstDay (Date.UTC).
+const puzzleNumber = firstDay => Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - firstDay) / 86400000) + 1;
+
+// Daily puzzles are built only from seasons that ended at least a year before the puzzle's year
+// (in 2026: up to 2023-24; in 2027: up to 2024-25). Those rosters never change, so weekly updates
+// can't change a day's puzzle, and each January the window moves forward one season.
+const CUTOFF = (today.getFullYear() - 2) * 10000 + (today.getFullYear() - 1);  // first season left out
+const CUTOFF_INDEX = (i => (i < 0 ? keys.length : i))(keys.findIndex(k => +k.split("-")[1] >= CUTOFF));
 const seasonsBefore = P.map(p => new Set(p.stints.map(season).filter(y => +y < CUTOFF)).size);
 const poolOf = min => P.map((p, i) => i).filter(i => seasonsBefore[i] >= min);
 
@@ -100,13 +115,6 @@ function mulberry32(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-const today = new Date();
-const dayKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-const dateKey = dayKey(today);
-const dateSeed = +dateKey.replace(/-/g, "");
-const todayLabel = today.toLocaleDateString(undefined, { month: "long", day: "numeric" });
-// Puzzle number for a game whose #1 was on firstDay (Date.UTC).
-const puzzleNumber = firstDay => Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - firstDay) / 86400000) + 1;
 
 /* ---------- saved progress (this browser only) ---------- */
 const store = {
@@ -278,7 +286,7 @@ function careerCard(i) {
   const line = document.createElement("p"); line.className = "career-facts"; line.textContent = facts.join(" · ");
   const runs = document.createElement("div"); runs.className = "career-teams";
   careerRuns(i).forEach(([t, a, b]) => {
-    const c = document.createElement("span"); c.className = "chip"; c.title = teamName(t);
+    const c = document.createElement("span"); c.className = "chip"; c.title = teamNameIn(t, `${a}${+a + 1}`);
     c.textContent = `${t} ${a}–${b.slice(2)}`; runs.appendChild(c);
   });
   const mates = document.createElement("p"); mates.className = "career-mates";

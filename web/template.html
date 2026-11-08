@@ -149,6 +149,7 @@ ol.chain::before { /* the red center line */
   <footer>
     <div id="stats"></div>
     <div>"Teammates" means on the same team's roster in the same season. Data from the public NHL API. Fan project, not affiliated with or endorsed by the National Hockey League. <a href="https://github.com/mavericktorchia-cpu/a-cool-little-program-for-NHL-player-connections-">Source on GitHub</a></div>
+    <div>No accounts, ads or tracking. Your game progress is saved only in this browser.</div>
   </footer>
 </div>
 
@@ -266,7 +267,7 @@ function connect() {
       via.append("Teammates on");
       st.slice(0, 4).forEach(s => {
         const c = document.createElement("span"); c.className = "chip";
-        c.textContent = stintLabel(s); c.title = teamName(team(s));
+        c.textContent = stintLabel(s); c.title = stintTeamName(s);
         via.appendChild(c);
       });
       if (st.length > 4) via.append(`+${plural(st.length - 4, "more season", "more seasons")}`);

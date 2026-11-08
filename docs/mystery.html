@@ -365,11 +365,12 @@ input[type="text"]:focus { outline: 2px solid var(--blue); outline-offset: 1px; 
   <footer>
     <div id="stats"></div>
     <div>"Seasons" counts years on an NHL team's roster. Data from the public NHL API. Fan project, not affiliated with or endorsed by the National Hockey League. <a href="https://github.com/mavericktorchia-cpu/a-cool-little-program-for-NHL-player-connections-">Source on GitHub</a></div>
+    <div>No accounts, ads or tracking. Your game progress is saved only in this browser.</div>
   </footer>
 </div>
 
-<script src="data.js?v=512ea13b85"></script>
-<script src="common.js?v=512ea13b85"></script>
+<script src="data.js?v=49db061297"></script>
+<script src="common.js?v=49db061297"></script>
 <script>
 const SITE = SITE_ROOT + "mystery.html";
 const FIRST_DAY = Date.UTC(2026, 10, 7); // puzzle #1
@@ -423,7 +424,7 @@ function cluesFor(i) {
     mate ? { k: "Teammate", v: `Played ${mate[1]} ${mate[1] === 1 ? "season" : "seasons"} alongside ${P[mate[0]].name}` }
          : { k: "Teammate", v: "No teammate data" },
     { k: "First and last team", v: teams.length === 1 ? `Spent the whole career with the ${teamName(first[0])}`
-         : `Started with the ${teamName(first[0])} (${first[1]}), finished with the ${teamName(lastRun[0])} (${lastRun[2]})` },
+         : `Started with the ${teamNameIn(first[0], `${first[1]}${+first[1] + 1}`)} (${first[1]}), finished with the ${teamNameIn(lastRun[0], `${lastRun[2] - 1}${lastRun[2]}`)} (${lastRun[2]})` },
     { k: "Every team, in order", teams: rs.map(([t, a, b]) => `${t} ${a}–${b.slice(2)}`) },
     { k: "Initials", v: p.name.split(/\s+/).map(w => w[0]).join(". ") + "." },
   ];
@@ -544,7 +545,7 @@ function render(fresh) {
     if (locked) v.textContent = "Locked";
     else if (c.teams) {
       const box = document.createElement("div"); box.className = "teams";
-      c.teams.forEach(t => { const s = document.createElement("span"); s.className = "chip"; s.textContent = t; s.title = teamName(t.split(" ")[0]); box.appendChild(s); });
+      c.teams.forEach(t => { const s = document.createElement("span"); s.className = "chip"; s.textContent = t; s.title = teamNameIn(t.split(" ")[0], `${t.split(" ")[1].slice(0, 4)}${+t.split(" ")[1].slice(0, 4) + 1}`); box.appendChild(s); });
       v.appendChild(box);
     } else v.textContent = c.v;
     ol.appendChild(li);

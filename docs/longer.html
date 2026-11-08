@@ -342,11 +342,12 @@ html.loading .wrap > :not(nav):not(header) { visibility: hidden; }
   <footer>
     <div id="stats"></div>
     <div>Stats come from season-by-season NHL rosters in the public NHL API. Fan project, not affiliated with or endorsed by the National Hockey League. <a href="https://github.com/mavericktorchia-cpu/a-cool-little-program-for-NHL-player-connections-">Source on GitHub</a></div>
+    <div>No accounts, ads or tracking. Your game progress is saved only in this browser.</div>
   </footer>
 </div>
 
-<script src="data.js?v=512ea13b85"></script>
-<script src="common.js?v=512ea13b85"></script>
+<script src="data.js?v=49db061297"></script>
+<script src="common.js?v=49db061297"></script>
 <script>
 const SITE = SITE_ROOT + "longer.html";
 const FIRST_DAY = Date.UTC(2026, 10, 7); // daily #1
@@ -381,8 +382,8 @@ function detail(i) {
 const debutDecade = i => Math.floor(+season(P[i].stints[0]).slice(0, 4) / 10) * 10;
 
 /* ---------- pools ---------- */
-// Daily rounds use retired players only (last roster season before 2024-25), so their numbers
-// never change and today's answers stay the same after weekly roster updates.
+// Daily rounds use only players whose last season is before CUTOFF (see common.js), so their
+// numbers never change and a day's answers stay the same after weekly roster updates.
 const lastSeason = i => +season(P[i].stints[P[i].stints.length - 1]);
 const POOL_DAILY = P.map((p, i) => i).filter(i => p_ok(i) && lastSeason(i) < CUTOFF && seasonsOf(i) >= 10);
 const POOL_ENDLESS = P.map((p, i) => i).filter(i => p_ok(i) && seasonsOf(i) >= 8);

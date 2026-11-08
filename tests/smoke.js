@@ -119,6 +119,27 @@ function serve() {
   await p.click("#done");
   check(await p.isVisible("#result") && (await p.locator(".slot.missed").count()) > 0, "finishing shows everyone missed");
 
+  // A last name that starts a longer one on the same roster waits for Enter (Horne vs Horner).
+  await p.evaluate(() => { newGame(keys.indexOf("TOR-19281929"), 0); render(); start(); });
+  await p.type("#g", "horne", { delay: 10 }); await p.waitForTimeout(50);
+  check((await p.inputValue("#g")) === "horne", "waits when a longer name starts the same way (Horne / Horner)");
+  await p.keyboard.press("Enter"); await p.waitForTimeout(50);
+  check((await p.innerText("#count")).startsWith("1/"), "Enter accepts it");
+  await p.evaluate(() => { newGame(keys.indexOf("ANA-19931994"), 0); render(); });
+  check(/Mighty Ducks of Anaheim/i.test(await p.textContent("#team-name")), "team names match the season (1993-94 Mighty Ducks)");
+
+  console.log("Daily puzzles in a later year");
+  const later = await browser.newContext({ viewport: { width: 1100, height: 1000 } });
+  for (const file of ["chain.html", "mystery.html", "longer.html", "roster.html"]) {
+    const q = await later.newPage();
+    q.on("pageerror", e => errors.push(`${file} (2027): ${e.message}`));
+    await q.clock.install({ time: new Date("2027-01-15T15:00:00") });
+    await q.goto(base + file); await q.waitForTimeout(300);
+    check(await q.evaluate(() => CUTOFF === 20252026), `${file}: the season window moves forward in 2027`);
+  }
+  const q = later.pages()[0];
+  check(await q.evaluate(() => G.par === shortestPath(G.a, G.b).length - 1), "2027 chain par is the true shortest chain");
+
   console.log("Main page after playing");
   p = await open("index.html");
   check(/✓/.test(await p.locator('.game[href="chain.html"]').innerText()), "today's puzzles shows the chain as done");

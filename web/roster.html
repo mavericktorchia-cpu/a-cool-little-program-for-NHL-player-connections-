@@ -162,6 +162,7 @@ input[type="text"]:disabled { opacity: .5; }
   <footer>
     <div id="stats"></div>
     <div>Rosters come from the public NHL API. Fan project, not affiliated with or endorsed by the National Hockey League. <a href="https://github.com/mavericktorchia-cpu/a-cool-little-program-for-NHL-player-connections-">Source on GitHub</a></div>
+    <div>No accounts, ads or tracking. Your game progress is saved only in this browser.</div>
   </footer>
 </div>
 
@@ -177,10 +178,11 @@ const named = (p, t) => p.key === t || p.lasts.includes(t);
 const GROUPS = [["Forwards", "CLR"], ["Defense", "D"], ["Goalies", "G"]];
 
 /* ---------- picking rosters ---------- */
-// Daily rosters come from finished seasons (1980-81 through 2023-24) so they never change.
+// Daily rosters come from 1980-81 up to the last season before CUTOFF (see common.js), so they
+// never change; the range grows by a season each January.
 const ERAS = {
   modern: [20002001, 99999999], classic: [19671968, 19992000], six: [19421943, 19661967],
-  early: [19171918, 19411942], any: [0, 99999999], daily: [19801981, 20232024],
+  early: [19171918, 19411942], any: [0, 99999999], daily: [19801981, CUTOFF - 10001],
 };
 function candidates(era, tm) {
   const [lo, hi] = ERAS[era];
@@ -283,8 +285,13 @@ function accept(i) {
 }
 function onInput() {
   if (!G.startedAt || G.ended) return;
+  const t = norm($("g").value);
   const m = matches($("g").value);
-  if (m.length === 1) accept(m[0]);
+  // Hold off if a longer name on the roster also starts with this ("Lee" while typing "Leeman");
+  // Enter still accepts it.
+  const longer = G.roster.some(i => !G.found.has(i) && !m.includes(i)
+    && [P[i].key, ...P[i].lasts].some(n => n.length > t.length && n.startsWith(t)));
+  if (m.length === 1 && !longer) accept(m[0]);
 }
 function onSubmit(e) {
   e.preventDefault();
@@ -300,7 +307,7 @@ function onSubmit(e) {
   const tm = team(G.s);
   const who = P.filter(p => named(p, t));
   const sameTeam = who.find(p => p.stints.some(s => team(s) === tm));
-  if (sameTeam) say(`${sameTeam.name} played for the ${teamName(tm)}, but not in ${seasonLabel(season(G.s))}.`, "near");
+  if (sameTeam) say(`${sameTeam.name} played for the ${stintTeamName(G.s)}, but not in ${seasonLabel(season(G.s))}.`, "near");
   else say(who.length ? `${who[0].name} isn't on this roster.` : `No player called "${text}" on this roster.`, "bad");
   if (!G.misses.includes(text)) G.misses.push(text);
   $("g").value = "";
@@ -321,7 +328,7 @@ function render(popped) {
   if (!G) return;
 
   $("season").textContent = `${seasonLabel(season(G.s))} season`;
-  $("team-name").textContent = teamName(team(G.s));
+  $("team-name").textContent = stintTeamName(G.s);
   $("count").textContent = `${G.found.size}/${G.roster.length}`;
   const t = $("time");
   if (!G.startedAt) { t.textContent = G.seconds ? clockText(G.seconds) : "0:00"; t.classList.remove("low"); }
@@ -371,7 +378,7 @@ function shareText() {
   const pct = Math.round((100 * G.found.size) / G.roster.length);
   const bar = Array.from({ length: 10 }, (_, k) => (k < Math.floor(pct / 10) ? "🟩" : "⬜")).join("");
   const title = mode === "daily" ? `Name the Roster #${dailyNo}` : "Name the Roster (practice)";
-  return `${title}\n🏒 ${seasonLabel(season(G.s))} ${teamName(team(G.s))}\n${bar} ${G.found.size}/${G.roster.length} (${pct}%)\n${SITE}`;
+  return `${title}\n🏒 ${seasonLabel(season(G.s))} ${stintTeamName(G.s)}\n${bar} ${G.found.size}/${G.roster.length} (${pct}%)\n${SITE}`;
 }
 function renderResult() {
   const box = $("result");
@@ -401,9 +408,14 @@ function renderResult() {
 
 /* ---------- controls ---------- */
 const teamSelect = $("team");
-teamSelect.innerHTML = '<option value="">Any team</option>' +
-  [...new Set(keys.map(k => k.split("-")[0]))].sort((a, b) => teamName(a).localeCompare(teamName(b)))
-    .map(t => `<option value="${t}">${teamName(t)}</option>`).join("");
+{
+  // Clubs that share a name (two Winnipeg Jets, two Ottawa Senators) get their years.
+  const codes = [...new Set(keys.map(k => k.split("-")[0]))];
+  const years = t => { const ss = keys.filter(k => k.startsWith(t + "-")).map(k => k.split("-")[1]); return `${ss[0].slice(0, 4)}–${ss[ss.length - 1].slice(4)}`; };
+  const label = t => codes.filter(c => teamName(c) === teamName(t)).length > 1 ? `${teamName(t)} (${years(t)})` : teamName(t);
+  teamSelect.replaceChildren(new Option("Any team", ""),
+    ...codes.sort((a, b) => label(a).localeCompare(label(b))).map(t => new Option(label(t), t)));
+}
 $("start").addEventListener("click", start);
 $("done").addEventListener("click", end);
 $("g").addEventListener("input", onInput);

@@ -21,7 +21,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from nhl_connections import api  # noqa: E402
 from nhl_connections.data import DEFAULT_DATA_FILE, load  # noqa: E402
 
 DOCS = ROOT / "docs"
@@ -90,20 +89,6 @@ def head_extra(title: str, description: str, url: str) -> str:
 """
 
 
-def team_names() -> dict[str, str]:
-    """Tri-code -> full team name, for hover labels. Optional: skipped when offline."""
-    try:
-        teams = api.get_json(f"{api.STATS_API}/team")["data"]
-    except Exception as exc:  # noqa: BLE001
-        print(f"(skipping team names: {exc})")
-        return {}
-    names: dict[str, str] = {}
-    for t in sorted(teams, key=lambda t: t["id"]):  # later ids win, e.g. UTA -> Utah Mammoth
-        if t.get("triCode"):
-            names[t["triCode"]] = t["fullName"]
-    return names
-
-
 def compact(data: dict) -> dict:
     """Shrink the data: players become a list, and rosters point into it by index."""
     ids = sorted(data["players"], key=int)
@@ -121,7 +106,8 @@ def compact(data: dict) -> dict:
             for pid in ids
         ],
         "r": {key: [index[pid] for pid in members] for key, members in data["rosters"].items()},
-        "t": team_names(),
+        "t": data.get("teams", {}),  # current name of each team code
+        "tn": data.get("team_names", {}),  # names that differ in particular seasons
     }
 
 
