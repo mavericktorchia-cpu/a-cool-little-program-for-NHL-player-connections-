@@ -50,11 +50,29 @@ def team_codes() -> list[str]:
 
 
 def team_seasons(team: str) -> list[int]:
-    """Seasons (like 20232024) for which the API has a roster for ``team``."""
+    """Seasons (like 20232024) that ``team`` played.
+
+    The roster endpoint's season list skips some seasons (Utah's 2024-25, for one), so the
+    season-stats list is merged in.
+    """
+    seasons: set[int] = set()
     try:
-        return list(get_json(f"{WEB_API}/roster-season/{team}") or [])
+        seasons.update(get_json(f"{WEB_API}/roster-season/{team}") or [])
     except NotFound:
-        return []
+        pass
+    try:
+        seasons.update(entry["season"] for entry in get_json(f"{WEB_API}/club-stats-season/{team}") or [])
+    except NotFound:
+        pass
+    return sorted(seasons)
+
+
+def birth_date(player_id: int) -> str:
+    """A player's birth date (YYYY-MM-DD) from their profile, or "" if unknown."""
+    try:
+        return get_json(f"{WEB_API}/player/{player_id}/landing").get("birthDate") or ""
+    except NotFound:
+        return ""
 
 
 def roster(team: str, season: int) -> list[dict]:
@@ -66,4 +84,38 @@ def roster(team: str, season: int) -> list[dict]:
     players = []
     for group in ("forwards", "defensemen", "goalies"):
         players.extend(data.get(group) or [])
+    return players
+
+
+# From 2023-24 on, the roster endpoint only lists a team's end-of-season roster (about 21
+# players instead of 35+), and it returns nothing for Arizona's final season. The season stats
+# endpoint lists everyone who played, so for those seasons we combine the two.
+STATS_FROM_SEASON = 20232024
+
+
+def club_stats_players(team: str, season: int) -> list[dict]:
+    """Everyone who played a regular-season game for ``team`` in ``season``, shaped like roster entries."""
+    try:
+        data = get_json(f"{WEB_API}/club-stats/{team}/{season}/2")
+    except NotFound:
+        return []
+    players = []
+    for p in (data.get("skaters") or []) + (data.get("goalies") or []):
+        players.append(
+            {
+                "id": p["playerId"],
+                "firstName": p.get("firstName") or {},
+                "lastName": p.get("lastName") or {},
+                "positionCode": p.get("positionCode") or ("G" if p in (data.get("goalies") or []) else ""),
+            }
+        )
+    return players
+
+
+def season_players(team: str, season: int) -> list[dict]:
+    """Roster for ``team`` in ``season``, topped up with everyone who played when the roster is incomplete."""
+    players = roster(team, season)
+    if season >= STATS_FROM_SEASON:
+        known = {p["id"] for p in players}
+        players += [p for p in club_stats_players(team, season) if p["id"] not in known]
     return players

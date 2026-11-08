@@ -49,7 +49,7 @@ def download(
 
     results: dict[tuple[str, int], list[dict]] = {}
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {pool.submit(api.roster, team, season): (team, season) for team, season in jobs}
+        futures = {pool.submit(api.season_players, team, season): (team, season) for team, season in jobs}
         for done, future in enumerate(as_completed(futures), 1):
             results[futures[future]] = future.result()
             if done % 100 == 0 or done == len(jobs):
@@ -64,10 +64,21 @@ def download(
             continue
         rosters[f"{team}-{season}"] = sorted({p["id"] for p in members})
         for p in members:
-            players.setdefault(
+            info = players.setdefault(
                 str(p["id"]),
                 {"name": _name(p), "pos": p.get("positionCode", ""), "born": p.get("birthDate", "")},
             )
+            # Stats-only entries have no birth date; fill it in from any roster entry that does.
+            if not info["born"] and p.get("birthDate"):
+                info["born"] = p["birthDate"]
+
+    # Players who only appear in season stats have no birth date yet; look those few up.
+    missing = [pid for pid, info in players.items() if not info["born"]]
+    if missing:
+        log(f"Looking up birth dates for {len(missing)} players...")
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            for pid, born in zip(missing, pool.map(lambda pid: api.birth_date(int(pid)), missing)):
+                players[pid]["born"] = born
 
     payload = {
         "built": _dt.date.today().isoformat(),
